@@ -27,12 +27,14 @@
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TMath.h"
+#include "TLorentzVector.h"
 #include "TFile.h"
 
 // b-Tagging
@@ -60,11 +62,6 @@ class MCResolutions: public edm::EDAnalyzer {
    edm::InputTag _weightName;
 
    double _btagCut;
-   double _jetMultPtCut;
-   double _jetMultEtaCut;
-   double _deltaPhiDiJet;
-   double _absCut3rdJet;
-   double _relCut3rdJet;
    double _deltaRMatch;
    double _deltaRMatchVeto;
    double _absPtVeto;
@@ -82,29 +79,17 @@ class MCResolutions: public edm::EDAnalyzer {
    void ResizeHistoVector(std::vector<std::vector<TH1F*> > &histoVector);
 
    // total
-   std::vector<std::vector<TH1F*> > h_tot_DiJet_JetResPt_Pt;
    std::vector<std::vector<TH1F*> > h_tot_JetAll_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_tot_Jet1_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_tot_Jet2_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_tot_Jet3_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_tot_Jet4_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_tot_Jet5p_JetResPt_Pt;
+   std::vector<std::vector<TH1F*> > h_tot_JetAll_JetResPhi_Pt;
+   std::vector<std::vector<TH1F*> > h_tot_JetAll_JetResEta_Pt;
    // with btag
-   std::vector<std::vector<TH1F*> > h_b_DiJet_JetResPt_Pt;
    std::vector<std::vector<TH1F*> > h_b_JetAll_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_b_Jet1_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_b_Jet2_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_b_Jet3_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_b_Jet4_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_b_Jet5p_JetResPt_Pt;
+   std::vector<std::vector<TH1F*> > h_b_JetAll_JetResPhi_Pt;
+   std::vector<std::vector<TH1F*> > h_b_JetAll_JetResEta_Pt;
    // without btag
-   std::vector<std::vector<TH1F*> > h_nob_DiJet_JetResPt_Pt;
    std::vector<std::vector<TH1F*> > h_nob_JetAll_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_nob_Jet1_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_nob_Jet2_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_nob_Jet3_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_nob_Jet4_JetResPt_Pt;
-   std::vector<std::vector<TH1F*> > h_nob_Jet5p_JetResPt_Pt;
+   std::vector<std::vector<TH1F*> > h_nob_JetAll_JetResPhi_Pt;
+   std::vector<std::vector<TH1F*> > h_nob_JetAll_JetResEta_Pt;
 
    std::vector<double> PtBinEdges;
    std::vector<double> EtaBinEdges;

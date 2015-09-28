@@ -78,29 +78,17 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 # Rebalancing and Smearing configuration
 ###############################################################################
 print "*** R+S Configuration **************************************************"
-process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/c/csander/xxl-af-cms/CMSSW_7_4_6_patch1/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_wideRange_bestMatching.root'
+process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/c/csander/xxl-af-cms/CMSSW_7_4_6_patch1/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_bestMatching_angles_withNeutrinos.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
-#process.QCDfromSmearing.InputHisto1_HF = 'h_tot_JetAll_ResponsePt'
-#process.QCDfromSmearing.InputHisto2_HF = 'h_tot_JetAll_ResponsePt'
-#process.QCDfromSmearing.InputHisto3p_HF = 'h_tot_JetAll_ResponsePt'
-#process.QCDfromSmearing.InputHisto1_NoHF = 'h_tot_JetAll_ResponsePt'
-#process.QCDfromSmearing.InputHisto2_NoHF = 'h_tot_JetAll_ResponsePt'
-#process.QCDfromSmearing.InputHisto3p_NoHF = 'h_tot_JetAll_ResponsePt'
-process.QCDfromSmearing.InputHisto1_HF = 'h_b_JetAll_ResponsePt'
-process.QCDfromSmearing.InputHisto2_HF = 'h_b_JetAll_ResponsePt'
-process.QCDfromSmearing.InputHisto3p_HF = 'h_b_JetAll_ResponsePt'
-process.QCDfromSmearing.InputHisto1_NoHF = 'h_nob_JetAll_ResponsePt'
-process.QCDfromSmearing.InputHisto2_NoHF = 'h_nob_JetAll_ResponsePt'
-process.QCDfromSmearing.InputHisto3p_NoHF = 'h_nob_JetAll_ResponsePt'
-#process.QCDfromSmearing.InputHisto1_HF = 'h_b_DiJet_ResponsePt'
-#process.QCDfromSmearing.InputHisto2_HF = 'h_b_DiJet_ResponsePt'
-#process.QCDfromSmearing.InputHisto3p_HF = 'h_b_DiJet_ResponsePt'
-#process.QCDfromSmearing.InputHisto1_NoHF = 'h_nob_DiJet_ResponsePt'
-#process.QCDfromSmearing.InputHisto2_NoHF = 'h_nob_DiJet_ResponsePt'
-#process.QCDfromSmearing.InputHisto3p_NoHF = 'h_nob_DiJet_ResponsePt'
-process.QCDfromSmearing.RebalanceCorrectionFile = '/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_pythia_phys14_withoutPUReweighting_pt10.root'
+process.QCDfromSmearing.InputHistoPt_HF = 'h_b_JetAll_ResponsePt'
+process.QCDfromSmearing.InputHistoEta_HF = 'h_b_JetAll_ResponseEta'
+process.QCDfromSmearing.InputHistoPhi_HF = 'h_b_JetAll_ResponsePhi'
+process.QCDfromSmearing.InputHistoPt_NoHF = 'h_nob_JetAll_ResponsePt'
+process.QCDfromSmearing.InputHistoEta_NoHF = 'h_nob_JetAll_ResponseEta'
+process.QCDfromSmearing.InputHistoPhi_NoHF = 'h_nob_JetAll_ResponsePhi'
+process.QCDfromSmearing.RebalanceCorrectionFile = '/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
 process.QCDfromSmearing.NRebin = 1
 process.QCDfromSmearing.SmearCollection = 'Reco'
 process.QCDfromSmearing.PtBinEdges_scaling = cms.vdouble(0., 7000.)
@@ -125,7 +113,8 @@ process.QCDfromSmearing.MHTSave = cms.double(0.)
 #process.QCDfromSmearing.HTSave = cms.double(500.)
 #process.QCDfromSmearing.MHTSave = cms.double(200.)
 process.QCDfromSmearing.cleverPrescaleTreating = False
-process.QCDfromSmearing.useRebalanceCorrectionFactors = False
+process.QCDfromSmearing.useRebalanceCorrectionFactors = True
+process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = True
 process.QCDfromSmearing.MHTcut_low = cms.double(200.)
 process.QCDfromSmearing.MHTcut_medium = cms.double(350.)
 process.QCDfromSmearing.MHTcut_high = cms.double(500.)
@@ -138,6 +127,8 @@ process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
 
 VarsInt = cms.vstring()
 VarsDouble = cms.vstring()
+VectorInt = cms.vstring()
+VectorDouble = cms.vstring()
 RecoCandVector = cms.vstring()
 
 # baseline producers
@@ -146,7 +137,7 @@ process.Baseline = cms.Sequence(
 
 ## --- NVertex producer -----------------------------------------------
 print "*** NVertex producer **************************************************"
-from AllHadronicSUSY.Utils.primaryvertices_cfi import primaryvertices
+from TreeMaker.Utils.primaryvertices_cfi import primaryvertices
 process.NVtx = primaryvertices.clone(
                                       VertexCollection  = cms.InputTag('offlineSlimmedPrimaryVertices'),
                                       )
@@ -154,7 +145,7 @@ process.Baseline += process.NVtx
 VarsInt.extend(['NVtx'])
 
 ## --- isotrack producer -----------------------------------------------
-from AllHadronicSUSY.Utils.trackIsolationMaker_cfi import trackIsolationFilter
+from TreeMaker.Utils.trackIsolationMaker_cfi import trackIsolationFilter
 
 process.IsolatedElectronTracksVeto = trackIsolationFilter.clone(
                                                                 doTrkIsoVeto= True,
@@ -197,7 +188,7 @@ process.Baseline += process.IsolatedMuonTracksVeto
 process.Baseline += process.IsolatedPionTracksVeto
 
 ## --- good leptons producer -------------------------------------------
-from AllHadronicSUSY.Utils.leptonproducer_cfi import leptonproducer
+from TreeMaker.Utils.leptonproducer_cfi import leptonproducer
 process.GoodLeptons = leptonproducer.clone(
                                            MuonTag          = cms.InputTag('slimmedMuons'),
                                            ElectronTag      = cms.InputTag('slimmedElectrons'),
@@ -275,7 +266,7 @@ if len(jecFile)>0:
                                                     )
 
 ## --- good jets producer -----------------------------------------------
-from AllHadronicSUSY.Utils.goodjetsproducer_cfi import GoodJetsProducer
+from TreeMaker.Utils.goodjetsproducer_cfi import GoodJetsProducer
 process.GoodJets = GoodJetsProducer.clone(
                                           TagMode = cms.bool(False),
                                           #JetTag= cms.InputTag('slimmedJets'),
@@ -305,7 +296,7 @@ process.Baseline += process.GoodJets
 
 ## --- HT jets producer ------------------------------------------------
 print "*** HT jets producer **************************************************"
-from AllHadronicSUSY.Utils.subJetSelection_cfi import SubJetSelection
+from TreeMaker.Utils.subJetSelection_cfi import SubJetSelection
 process.HTJets = SubJetSelection.clone(
                                        JetTag   = cms.InputTag('GoodJets'),
                                        MinPt    = cms.double(30),
@@ -315,7 +306,7 @@ process.Baseline += process.HTJets
 
 ## --- HT producer -----------------------------------------------------
 print "*** HT producer **************************************************"
-from AllHadronicSUSY.Utils.htdouble_cfi import htdouble
+from TreeMaker.Utils.htdouble_cfi import htdouble
 process.HT = htdouble.clone(
                             JetTag  = cms.InputTag('HTJets'),
 )
@@ -324,7 +315,7 @@ VarsDouble.extend(['HT'])
    
 ## --- NJets producer --------------------------------------------------
 print "*** NJets producer **************************************************"
-from AllHadronicSUSY.Utils.njetint_cfi import njetint
+from TreeMaker.Utils.njetint_cfi import njetint
 process.NJets = njetint.clone(
                               JetTag  = cms.InputTag('HTJets'),
 )
@@ -333,7 +324,7 @@ VarsInt.extend(['NJets'])
 
 ## --- NBJets producer -------------------------------------------------
 print "*** NBJets producer **************************************************"
-from AllHadronicSUSY.Utils.btagint_cfi import btagint
+from TreeMaker.Utils.btagint_cfi import btagint
 process.BTags = btagint.clone(
                               JetTag         = cms.InputTag('HTJets'),
                               BTagInputTag = cms.string('pfCombinedInclusiveSecondaryVertexV2BJetTags'),
@@ -344,7 +335,7 @@ VarsInt.extend(['BTags'])
 
 ## --- MHT jets producer -----------------------------------------------
 print "*** MHT jets producer **************************************************"
-from AllHadronicSUSY.Utils.subJetSelection_cfi import SubJetSelection
+from TreeMaker.Utils.subJetSelection_cfi import SubJetSelection
 process.MHTJets = SubJetSelection.clone(
                                         JetTag  = cms.InputTag('GoodJets'),
                                         MinPt   = cms.double(30),
@@ -354,7 +345,7 @@ process.Baseline += process.MHTJets
 
 ## --- MHT producer ----------------------------------------------------
 print "*** MHT producer **************************************************"
-from AllHadronicSUSY.Utils.metdouble_cfi import metdouble
+from TreeMaker.Utils.metdouble_cfi import metdouble
 process.MET = metdouble.clone(
                               JetTag  = cms.InputTag('MHTJets'),
                               )
@@ -362,7 +353,7 @@ process.Baseline += process.MET
 VarsDouble.extend(['MET:minDeltaPhiN'])
 
 print "*** MHT producer **************************************************"
-from AllHadronicSUSY.Utils.mhtdouble_cfi import mhtdouble
+from TreeMaker.Utils.mhtdouble_cfi import mhtdouble
 process.MHT = mhtdouble.clone(
                               JetTag  = cms.InputTag('MHTJets'),
 )
@@ -371,7 +362,7 @@ VarsDouble.extend(['MHT:Pt(MHT)'])
 
 ## --- DeltaPhi producer -----------------------------------------------
 print "*** DeltaPhi producer **************************************************"
-from AllHadronicSUSY.Utils.deltaphidouble_cfi import deltaphidouble
+from TreeMaker.Utils.deltaphidouble_cfi import deltaphidouble
 process.DeltaPhi = deltaphidouble.clone(
                                         DeltaPhiJets  = cms.InputTag('HTJets'),
                                         MHTJets       = cms.InputTag('MHTJets'),
@@ -386,12 +377,14 @@ VarsDouble.extend(['DeltaPhi:DeltaPhi1','DeltaPhi:DeltaPhi2','DeltaPhi:DeltaPhi3
 VarsDouble.extend(['WeightProducer:weight(Weight)'])
 
 print "*** Treemaker setup **************************************************"
-from AllHadronicSUSY.TreeMaker.treeMaker import TreeMaker
+from TreeMaker.TreeMaker.treeMaker import TreeMaker
 process.RA2TreeMaker = TreeMaker.clone(
                                        TreeName       = cms.string("PreSelection"),
                                        VarsRecoCand   = RecoCandVector,
                                        VarsDouble     = VarsDouble,
                                        VarsInt        = VarsInt,
+                                       VectorDouble   = VectorDouble,
+                                       VectorInt      = VectorInt,
 )
 ###############################################################################
 

@@ -22,12 +22,12 @@ SmearFunction::SmearFunction( const edm::ParameterSet& iConfig ) {
    AdditionalSmearing_variation_ = iConfig.getParameter<double> ("AdditionalSmearing_variation");
    NRebin_ = iConfig.getParameter<int> ("NRebin");
    uncertaintyName_ = iConfig.getParameter<std::string> ("uncertaintyName");
-   inputhist1HF_ = iConfig.getParameter<std::string> ("InputHisto1_HF");
-   inputhist2HF_ = iConfig.getParameter<std::string> ("InputHisto2_HF");
-   inputhist3pHF_ = iConfig.getParameter<std::string> ("InputHisto3p_HF");
-   inputhist1NoHF_ = iConfig.getParameter<std::string> ("InputHisto1_NoHF");
-   inputhist2NoHF_ = iConfig.getParameter<std::string> ("InputHisto2_NoHF");
-   inputhist3pNoHF_ = iConfig.getParameter<std::string> ("InputHisto3p_NoHF");
+   inputhistPtHF_ = iConfig.getParameter<std::string> ("InputHistoPt_HF");
+   inputhistEtaHF_ = iConfig.getParameter<std::string> ("InputHistoEta_HF");
+   inputhistPhiHF_ = iConfig.getParameter<std::string> ("InputHistoPhi_HF");
+   inputhistPtNoHF_ = iConfig.getParameter<std::string> ("InputHistoPt_NoHF");
+   inputhistEtaNoHF_ = iConfig.getParameter<std::string> ("InputHistoEta_NoHF");
+   inputhistPhiNoHF_ = iConfig.getParameter<std::string> ("InputHistoPhi_NoHF");
    smearingfile_ = iConfig.getParameter<std::string> ("SmearingFile");
    outputfile_ = iConfig.getParameter<std::string> ("OutputFile");
    absoluteTailScaling_ = iConfig.getParameter<bool> ("absoluteTailScaling");
@@ -75,24 +75,59 @@ void SmearFunction::CalculateSmearFunctions() {
       for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
          //// Get the histos
          char hname[100];
-         // get no heavy flavor hists
-         sprintf(hname, "%s_Pt%i_Eta%i", inputhist1NoHF_.c_str(), i_Pt, i_eta);
+         //cout << "Histos, i_Pt: " << i_Pt <<  " i_eta: " << i_eta << endl;
+         //// get no heavy flavor hists
+         sprintf(hname, "%s_Pt%i_Eta%i", inputhistPtNoHF_.c_str(), i_Pt, i_eta);
          smearFunc.at(0).at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         sprintf(hname, "%s_Pt%i_Eta%i", inputhist2NoHF_.c_str(), i_Pt, i_eta);
-         smearFunc.at(0).at(1).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         sprintf(hname, "%s_Pt%i_Eta%i", inputhist3pNoHF_.c_str(), i_Pt, i_eta);
-         smearFunc.at(0).at(2).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         // get heavy flavor hists
-         sprintf(hname, "%s_Pt%i_Eta%i", inputhist1HF_.c_str(), i_Pt, i_eta);
+         sprintf(hname, "%s_Pt%i_Eta%i", inputhistEtaNoHF_.c_str(), i_Pt, i_eta);
+         smearFuncEta.at(0).at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
+         sprintf(hname, "%s_Pt%i_Eta%i", inputhistPhiNoHF_.c_str(), i_Pt, i_eta);
+         smearFuncPhi.at(0).at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
+         //// get heavy flavor hists
+         sprintf(hname, "%s_Pt%i_Eta%i", inputhistPtHF_.c_str(), i_Pt, i_eta);
          smearFunc.at(1).at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         sprintf(hname, "%s_Pt%i_Eta%i", inputhist2HF_.c_str(), i_Pt, i_eta);
-         smearFunc.at(1).at(1).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         sprintf(hname, "%s_Pt%i_Eta%i", inputhist3pHF_.c_str(), i_Pt, i_eta);
-         smearFunc.at(1).at(2).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
+         sprintf(hname, "%s_Pt%i_Eta%i", inputhistEtaHF_.c_str(), i_Pt, i_eta);
+         smearFuncEta.at(1).at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
+         sprintf(hname, "%s_Pt%i_Eta%i", inputhistPhiHF_.c_str(), i_Pt, i_eta);
+         smearFuncPhi.at(1).at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
+         
+         //// Phi resolution
          
          for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) { // loop over jet flavor
-            for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) { // loop over jet rank
-               //cout << "i_Pt: " << i_Pt <<  " i_eta: " << i_eta <<  " i_flav: " << i_flav <<  " i_jet: " << i_jet << endl;
+            for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) { // loop over jet rank
+               //cout << "Phi, i_Pt: " << i_Pt <<  " i_eta: " << i_eta <<  " i_flav: " << i_flav <<  " i_jet: " << i_jet << endl;
+               //// Get RMS
+               if (smearFuncPhi.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->GetEntries() > 10) {
+                  double RMS = smearFuncPhi.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->GetRMS();
+                  SigmaPhiHist.at(i_flav).at(i_jet).at(i_eta).at(i_Pt) = RMS;
+               } else {
+                  double RMS = 0.02;
+                  SigmaPhiHist.at(i_flav).at(i_jet).at(i_eta).at(i_Pt) = RMS;
+               }
+            }
+         }
+
+         //// Eta resolution
+         
+         for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) { // loop over jet flavor
+            for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) { // loop over jet rank
+               //cout << "Eta, i_Pt: " << i_Pt <<  " i_eta: " << i_eta <<  " i_flav: " << i_flav <<  " i_jet: " << i_jet << endl;
+               //// Get RMS
+               if (smearFuncEta.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->GetEntries() > 10) {
+                  double RMS = smearFuncEta.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->GetRMS();
+                  SigmaEtaHist.at(i_flav).at(i_jet).at(i_eta).at(i_Pt) = RMS;
+               } else {
+                  double RMS = 0.03;
+                  SigmaEtaHist.at(i_flav).at(i_jet).at(i_eta).at(i_Pt) = RMS;
+               }
+            }
+         }
+
+         //// Pt response
+         
+         for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) { // loop over jet flavor
+            for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) { // loop over jet rank
+               // << "Pt, i_Pt: " << i_Pt <<  " i_eta: " << i_eta <<  " i_flav: " << i_flav <<  " i_jet: " << i_jet << endl;
                smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Rebin(NRebin_);
                if (probExtreme_ > 0) {
                   double p = probExtreme_ * smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Integral();
@@ -186,7 +221,7 @@ void SmearFunction::CalculateSmearFunctions() {
    
    //// Fit scaled gaussian sigma as function of pt
    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-      for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+      for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
          for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
             char fname[100];
             sprintf(fname, "SigmaPtScaled_JetFlavor%i_Eta%i_Jet%i", i_flav, i_eta, i_jet + 1);
@@ -215,7 +250,7 @@ void SmearFunction::CalculateSmearFunctions() {
    
    //// Fit gaussian sigma as function of pt
    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-      for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+      for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
          for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
             char fname[100];
             sprintf(fname, "SigmaPt_JetFlavor%i_Eta%i_Jet%i", i_flav, i_eta, i_jet + 1);
@@ -243,7 +278,7 @@ void SmearFunction::CalculateSmearFunctions() {
    
    //// Book and fill histograms for smeared and scaled response functions
    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-      for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+      for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
          for (unsigned int i_Pt = 0; i_Pt < PtBinEdges_.size() - 1; ++i_Pt) {
             for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
                //cout << "i_Pt: " << i_Pt <<  " i_eta: " << i_eta <<  " i_flav: " << i_flav <<  " i_jet: " << i_jet << endl;
@@ -332,151 +367,7 @@ void SmearFunction::CalculateSmearFunctions() {
          }
       }
    }
-   /*
-    gROOT->Reset();
-    gROOT->SetStyle("Plain");
-    gStyle->SetStatColor(0);
-    gStyle->SetCanvasColor(0);
-    gStyle->SetPadColor(0);
-    gStyle->SetPadBorderMode(0);
-    gStyle->SetCanvasBorderMode(0);
-    gStyle->SetFrameBorderMode(0);
-    gStyle->SetOptStat(0);
-    gStyle->SetStatBorderSize(2);
-    gStyle->SetOptTitle(1);
-    gStyle->SetPadTickX(1);
-    gStyle->SetPadTickY(1);
-    gStyle->SetPadBorderSize(2);
-    gStyle->SetPalette(51, 0);
-    gStyle->SetPadBottomMargin(0.25);
-    gStyle->SetPadTopMargin(0.10);
-    gStyle->SetPadLeftMargin(0.2);
-    gStyle->SetPadRightMargin(0.05);
-    gStyle->SetTitleOffset(1.2, "X");
-    gStyle->SetTitleOffset(1.6, "Y");
-    gStyle->SetTitleOffset(1.0, "Z");
-    gStyle->SetLabelSize(0.05, "X");
-    gStyle->SetLabelSize(0.05, "Y");
-    gStyle->SetLabelSize(0.05, "Z");
-    gStyle->SetLabelOffset(0.02, "X");
-    gStyle->SetLabelOffset(0.02, "Y");
-    gStyle->SetLabelOffset(0.02, "Z");
-    gStyle->SetTitleSize(0.05, "X");
-    gStyle->SetTitleSize(0.05, "Y");
-    gStyle->SetTitleSize(0.05, "Z");
-    gStyle->SetTitleColor(1);
-    gStyle->SetTitleFillColor(0);
-    gStyle->SetTitleFontSize(0.06);
-    gStyle->SetTitleY(0.99);
-    gStyle->SetTitleX(0.15);
-    gStyle->SetTitleBorderSize(0);
-    gStyle->SetLineWidth(2);
-    gStyle->SetHistLineWidth(2);
-    gStyle->SetLegendBorderSize(0);
-    gStyle->SetNdivisions(505, "X");
-    gStyle->SetMarkerSize(0.8);
-    gStyle->SetTickLength(0.03);
-    gROOT->ForceStyle();
-    
-    TString psfile = "SmearFunctions";//(outputfile_ + uncertaintyName_).c_str();
-    TCanvas *c = new TCanvas("", "", 800, 800);
-    c->cd();
-    c->Print(psfile + ".ps(");
-    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-    for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
-    for (unsigned int i_Pt = 0; i_Pt < PtBinEdges_.size() - 1; ++i_Pt) {
-    for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
-    char cname[100];
-    sprintf(cname, "c_Pt%i_Eta%i_Jet%i_JetFlavor%i", i_Pt, i_eta, i_jet + 1, i_flav);
-    c->SetName(cname);
-    c->SetLogy();
-    smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetTitle(cname);
-    smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kBlack);
-    smearFunc_Core.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kGreen);
-    smearFunc_LowerTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kRed);
-    smearFunc_UpperTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kMagenta);
-    smearFunc_scaled.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kBlue);
-    smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw();
-    smearFunc_Core.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-    smearFunc_LowerTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-    smearFunc_UpperTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-    smearFunc_scaled.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-    c->Print(psfile + ".ps");
-    }
-    }
-    }
-    }
-    c->Print(psfile + ".ps)");*/
-   
-   
-   //  string ending = ".ps";
-   //    TPostScript* psfile = new TPostScript((outputfile_ + uncertaintyName_ + ending).c_str(), 111);
-   //    psfile->NewPage();
-   //    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-   //       for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
-   //          for (unsigned int i_Pt = 0; i_Pt < PtBinEdges_.size() - 1; ++i_Pt) {
-   //             for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
-   //                char cname[100];
-   //                sprintf(cname, "c_Pt%i_Eta%i_Jet%i_JetFlavor%i", i_Pt, i_eta, i_jet + 1, i_flav);
-   //                TCanvas c(cname, cname, 800, 800);
-   //                c.Divide(1, 1);
-   //                c.cd(1)->SetLogy();
-   //                smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kBlack);
-   //                smearFunc_Core.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kGreen);
-   //                smearFunc_LowerTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kRed);
-   //                smearFunc_UpperTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kMagenta);
-   //                smearFunc_scaled.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->SetLineColor(kBlue);
-   //                smearFunc.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw();
-   //                smearFunc_Core.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-   //                smearFunc_LowerTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-   //                smearFunc_UpperTail.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-   //                smearFunc_scaled.at(i_flav).at(i_jet).at(i_eta).at(i_Pt)->Draw("same");
-   //                c.Update();
-   //                psfile->NewPage();
-   //             }
-   //          }
-   //       }
-   //    }
-   //    psfile->Close();
-   
-   //    string file_ending = ".root";
-   //    TFile* o = new TFile((outputfile_ + uncertaintyName_ + file_ending).c_str(), "RECREATE",
-   //                         "Scaled and smeared Jet response in pT and eta bins");
-   //    //// Store response histograms in Sue Anns container format
-   //    Space* axisPT = new BinnedSpace("pt", "p_{T}", PtBinEdges_.size() - 1, &(PtBinEdges_.at(0)), false, false);
-   //    Space* axisEta = new BinnedSpace("eta", "|#eta|", EtaBinEdges_.size() - 1, &(EtaBinEdges_.at(0)), false, false);
-   //    Space* axisJet = new IntegerSpace("jetRank", "jet Rank", 0, 2, false, false);
-   //    Space* axisJetFlavor = new IntegerSpace("jetFlavor", "jet Flavor", 0, 1, false, false);
-   //    ParamatrixF* store = new ParamatrixF("jetRes", "Jet resolution");
-   //    store->addParameter(axisPT);
-   //    store->addParameter(axisEta);
-   //    store->addParameter(axisJet);
-   //    store->addParameter(axisJetFlavor);
-   //    store->bake();
-   
-   //    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-   //       for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
-   //          for (unsigned int i_Pt = 0; i_Pt < PtBinEdges_.size() - 1; ++i_Pt) {
-   //             for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
-   //                double Pt = axisPT->getBinCenter(i_Pt);
-   //                double eta = axisEta->getBinCenter(i_eta);
-   //                double jet = axisJet->getBinCenter(i_jet);
-   //                double flavor = axisJetFlavor->getBinCenter(i_flav);
-   //                //cout << "Pt: " << Pt << " Eta: " << eta << " JetRank: " << jet << "Jet Flavor" << flavor << endl;
-   //                //double Pt = (PtBinEdges_.at(i_Pt) + PtBinEdges_.at(i_Pt + 1)) / 2;
-   //                //double eta = (EtaBinEdges_.at(i_eta) + EtaBinEdges_.at(i_eta + 1)) / 2;
-   //                PopulationF* resolution = new PopulationF(smearFunc_scaled.at(i_flav).at(i_jet).at(i_eta).at(i_Pt), false, false);
-   //                store->set(resolution, Pt, eta, jet, flavor);
-   //             }
-   //          }
-   //       }
-   //    }
-   //    store->printMap("pt", "jetRank");
-   //    store->sitrep();
-   
-   //    o->cd();
-   //    store->Write(store->GetName(), TObject::kWriteDelete);
-   //    o->Close();
+
 }
 //--------------------------------------------------------------------------
 
@@ -488,7 +379,7 @@ void SmearFunction::FillSigmaHistsForRebalancing() {
    //// open root file/tree and create SmearingFunction histo
    TFile *f1 = new TFile(smearingfile_.c_str(), "READ", "", 0);
    
-   smearFunc_total.resize(3); //// three bins for jet rank
+   smearFunc_total.resize(1); //// 1 bins for jet rank
    for (std::vector<std::vector<std::vector<TH1F*> > >::iterator it = smearFunc_total.begin(); it != smearFunc_total.end(); ++it) {
       it->resize(EtaBinEdges_.size() - 1);
       for (std::vector<std::vector<TH1F*> >::iterator jt = it->begin(); jt != it->end(); ++jt) {
@@ -496,8 +387,8 @@ void SmearFunction::FillSigmaHistsForRebalancing() {
       }
    }
    
-   SigmaPtHist_scaled_total.resize(3);
-   for (int i_jet = 0; i_jet < 3; ++i_jet) {
+   SigmaPtHist_scaled_total.resize(1);
+   for (int i_jet = 0; i_jet < 1; ++i_jet) {
       SigmaPtHist_scaled_total.at(i_jet).resize(EtaBinEdges_.size() - 1);
       for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
          char hname[100];
@@ -508,8 +399,8 @@ void SmearFunction::FillSigmaHistsForRebalancing() {
       }
    }
    
-   SigmaPtHist_total.resize(3);
-   for (int i_jet = 0; i_jet < 3; ++i_jet) {
+   SigmaPtHist_total.resize(1);
+   for (int i_jet = 0; i_jet < 1; ++i_jet) {
       SigmaPtHist_total.at(i_jet).resize(EtaBinEdges_.size() - 1);
       for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
          char hname[100];
@@ -519,8 +410,8 @@ void SmearFunction::FillSigmaHistsForRebalancing() {
       }
    }
    
-   SigmaPt_total.resize(3);
-   for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+   SigmaPt_total.resize(1);
+   for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
       SigmaPt_total.at(i_jet).resize(EtaBinEdges_.size() - 1);
    }
    
@@ -530,12 +421,8 @@ void SmearFunction::FillSigmaHistsForRebalancing() {
          char hname[100];  // if different jet rank resolutions shall be used, change below!!
          sprintf(hname, "h_tot_JetAll_ResponsePt_Pt%i_Eta%i", i_Pt, i_eta);
          smearFunc_total.at(0).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         sprintf(hname, "h_tot_JetAll_ResponsePt_Pt%i_Eta%i", i_Pt, i_eta);
-         smearFunc_total.at(1).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
-         sprintf(hname, "h_tot_JetAll_ResponsePt_Pt%i_Eta%i", i_Pt, i_eta);
-         smearFunc_total.at(2).at(i_eta).at(i_Pt) = (TH1F*) f1->FindObjectAny(hname);
          
-         for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+         for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
             smearFunc_total.at(i_jet).at(i_eta).at(i_Pt)->Rebin(NRebin_);
             if (probExtreme_ > 0) {
                double p = probExtreme_ * smearFunc_total.at(i_jet).at(i_eta).at(i_Pt)->Integral();
@@ -596,7 +483,7 @@ void SmearFunction::FillSigmaHistsForRebalancing() {
    }
    
    //// Fit gaussian sigma as function of pt
-   for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+   for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
       for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
          char fname[100];
          sprintf(fname, "SigmaPt_total_Eta%i_Jet%i", i_eta, i_jet + 1);
@@ -715,7 +602,29 @@ void SmearFunction::ResizeSmearFunctions() {
    
    smearFunc.resize(2); //// two bins for jet flavour
    for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFunc.begin(); ht != smearFunc.end(); ++ht) {
-      ht->resize(3);  //// three bins for jet rank
+      ht->resize(1);  //// one bins for jet rank
+      for (std::vector< std::vector< std::vector<TH1F*> > >::iterator it = ht->begin(); it != ht->end(); ++it) {
+         it->resize(EtaBinEdges_.size() - 1);
+         for (std::vector<std::vector<TH1F*> >::iterator jt = it->begin(); jt != it->end(); ++jt) {
+            jt->resize(PtBinEdges_.size() - 1);
+         }
+      }
+   }
+   
+   smearFuncEta.resize(2); //// two bins for jet flavour
+   for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFuncEta.begin(); ht != smearFuncEta.end(); ++ht) {
+      ht->resize(1);  //// one bins for jet rank
+      for (std::vector< std::vector< std::vector<TH1F*> > >::iterator it = ht->begin(); it != ht->end(); ++it) {
+         it->resize(EtaBinEdges_.size() - 1);
+         for (std::vector<std::vector<TH1F*> >::iterator jt = it->begin(); jt != it->end(); ++jt) {
+            jt->resize(PtBinEdges_.size() - 1);
+         }
+      }
+   }
+
+   smearFuncPhi.resize(2); //// two bins for jet flavour
+   for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFuncPhi.begin(); ht != smearFuncPhi.end(); ++ht) {
+      ht->resize(1);  //// one bins for jet rank
       for (std::vector< std::vector< std::vector<TH1F*> > >::iterator it = ht->begin(); it != ht->end(); ++it) {
          it->resize(EtaBinEdges_.size() - 1);
          for (std::vector<std::vector<TH1F*> >::iterator jt = it->begin(); jt != it->end(); ++jt) {
@@ -726,7 +635,7 @@ void SmearFunction::ResizeSmearFunctions() {
    
    smearFunc_Core.resize(2); //// two bins for jet flavour
    for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFunc_Core.begin(); ht != smearFunc_Core.end(); ++ht) {
-      ht->resize(3);  //// three bins for jet rank
+      ht->resize(1);  //// one bins for jet rank
       for (std::vector<std::vector<std::vector<TH1F*> > >::iterator it = ht->begin(); it
            != ht->end(); ++it) {
          it->resize(EtaBinEdges_.size() - 1);
@@ -738,7 +647,7 @@ void SmearFunction::ResizeSmearFunctions() {
    
    smearFunc_LowerTail.resize(2); //// two bins for jet flavour
    for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFunc_LowerTail.begin(); ht != smearFunc_LowerTail.end(); ++ht) {
-      ht->resize(3);  //// three bins for jet rank
+      ht->resize(1);  //// one bins for jet rank
       for (std::vector<std::vector<std::vector<TH1F*> > >::iterator it = ht->begin(); it
            != ht->end(); ++it) {
          it->resize(EtaBinEdges_.size() - 1);
@@ -750,7 +659,7 @@ void SmearFunction::ResizeSmearFunctions() {
    
    smearFunc_UpperTail.resize(2); //// two bins for jet flavour
    for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFunc_UpperTail.begin(); ht != smearFunc_UpperTail.end(); ++ht) {
-      ht->resize(3);  //// three bins for jet rank
+      ht->resize(1);  //// one bins for jet rank
       for (std::vector<std::vector<std::vector<TH1F*> > >::iterator it = ht->begin(); it
            != ht->end(); ++it) {
          it->resize(EtaBinEdges_.size() - 1);
@@ -762,7 +671,7 @@ void SmearFunction::ResizeSmearFunctions() {
    
    smearFunc_scaled.resize(2); //// two bins for jet flavour
    for (std::vector<std::vector<std::vector<std::vector<TH1F*> > > >::iterator ht = smearFunc_scaled.begin(); ht != smearFunc_scaled.end(); ++ht) {
-      ht->resize(3);  //// three bins for jet rank
+      ht->resize(1);  //// one bins for jet rank
       for (std::vector<std::vector<std::vector<TH1F*> > >::iterator it = ht->begin(); it
            != ht->end(); ++it) {
          it->resize(EtaBinEdges_.size() - 1);
@@ -774,8 +683,8 @@ void SmearFunction::ResizeSmearFunctions() {
    
    SigmaPtHist_scaled.resize(2); //// two bins for jet flavour
    for (int i_flav = 0; i_flav < 2; ++i_flav) {
-      SigmaPtHist_scaled.at(i_flav).resize(3);
-      for (int i_jet = 0; i_jet < 3; ++i_jet) {
+      SigmaPtHist_scaled.at(i_flav).resize(1);
+      for (int i_jet = 0; i_jet < 1; ++i_jet) {
          SigmaPtHist_scaled.at(i_flav).at(i_jet).resize(EtaBinEdges_.size() - 1);
          for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
             char hname[100];
@@ -789,8 +698,8 @@ void SmearFunction::ResizeSmearFunctions() {
    
    SigmaPtHist.resize(2); //// two bins for jet flavour
    for (int i_flav = 0; i_flav < 2; ++i_flav) {
-      SigmaPtHist.at(i_flav).resize(3);
-      for (int i_jet = 0; i_jet < 3; ++i_jet) {
+      SigmaPtHist.at(i_flav).resize(1);
+      for (int i_jet = 0; i_jet < 1; ++i_jet) {
          SigmaPtHist.at(i_flav).at(i_jet).resize(EtaBinEdges_.size() - 1);
          for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
             char hname[100];
@@ -801,18 +710,40 @@ void SmearFunction::ResizeSmearFunctions() {
       }
    }
    
+   SigmaEtaHist.resize(2); //// two bins for jet flavour
+   for (int i_flav = 0; i_flav < 2; ++i_flav) {
+      SigmaEtaHist.at(i_flav).resize(1);
+      for (int i_jet = 0; i_jet < 1; ++i_jet) {
+         SigmaEtaHist.at(i_flav).at(i_jet).resize(EtaBinEdges_.size() - 1);
+         for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
+            SigmaEtaHist.at(i_flav).at(i_jet).at(i_eta).resize(PtBinEdges_.size() - 1);
+         }
+      }
+   }
+
+   SigmaPhiHist.resize(2); //// two bins for jet flavour
+   for (int i_flav = 0; i_flav < 2; ++i_flav) {
+      SigmaPhiHist.at(i_flav).resize(1);
+      for (int i_jet = 0; i_jet < 1; ++i_jet) {
+         SigmaPhiHist.at(i_flav).at(i_jet).resize(EtaBinEdges_.size() - 1);
+         for (unsigned int i_eta = 0; i_eta < EtaBinEdges_.size() - 1; ++i_eta) {
+            SigmaPhiHist.at(i_flav).at(i_jet).at(i_eta).resize(PtBinEdges_.size() - 1);
+         }
+      }
+   }
+
    SigmaPt_scaled.resize(2);//// two bins for jet flavour
    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-      SigmaPt_scaled.at(i_flav).resize(3);
-      for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+      SigmaPt_scaled.at(i_flav).resize(1);
+      for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
          SigmaPt_scaled.at(i_flav).at(i_jet).resize(EtaBinEdges_.size() - 1);
       }
    }
    
    SigmaPt.resize(2);//// two bins for jet flavour
    for (unsigned int i_flav = 0; i_flav < 2; ++i_flav) {
-      SigmaPt.at(i_flav).resize(3);
-      for (unsigned int i_jet = 0; i_jet < 3; ++i_jet) {
+      SigmaPt.at(i_flav).resize(1);
+      for (unsigned int i_jet = 0; i_jet < 1; ++i_jet) {
          SigmaPt.at(i_flav).at(i_jet).resize(EtaBinEdges_.size() - 1);
       }
    }

@@ -52,12 +52,12 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    btagCut_ = iConfig.getParameter<double> ("btagCut");
    leptonTag_ = iConfig.getParameter<edm::InputTag> ("leptonTag");
    uncertaintyName_ = iConfig.getParameter<std::string> ("uncertaintyName");
-   inputhist1HF_ = iConfig.getParameter<std::string> ("InputHisto1_HF");
-   inputhist2HF_ = iConfig.getParameter<std::string> ("InputHisto2_HF");
-   inputhist3pHF_ = iConfig.getParameter<std::string> ("InputHisto3p_HF");
-   inputhist1NoHF_ = iConfig.getParameter<std::string> ("InputHisto1_NoHF");
-   inputhist2NoHF_ = iConfig.getParameter<std::string> ("InputHisto2_NoHF");
-   inputhist3pNoHF_ = iConfig.getParameter<std::string> ("InputHisto3p_NoHF");
+   inputhistPtHF_ = iConfig.getParameter<std::string> ("InputHistoPt_HF");
+   inputhistEtaHF_ = iConfig.getParameter<std::string> ("InputHistoEta_HF");
+   inputhistPhiHF_ = iConfig.getParameter<std::string> ("InputHistoPhi_HF");
+   inputhistPtNoHF_ = iConfig.getParameter<std::string> ("InputHistoPt_NoHF");
+   inputhistEtaNoHF_ = iConfig.getParameter<std::string> ("InputHistoEta_NoHF");
+   inputhistPhiNoHF_ = iConfig.getParameter<std::string> ("InputHistoPhi_NoHF");
    RebalanceCorrectionFile_ = iConfig.getParameter<std::string> ("RebalanceCorrectionFile");
    controlPlots_ = iConfig.getParameter<bool> ("ControlPlots");
    isData_ = iConfig.getParameter<bool> ("IsData");
@@ -69,6 +69,7 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    absoluteTailScaling_ = iConfig.getParameter<bool> ("absoluteTailScaling");
    cleverPrescaleTreating_ = iConfig.getParameter<bool> ("cleverPrescaleTreating");
    useRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useRebalanceCorrectionFactors");
+   useCleverRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useCleverRebalanceCorrectionFactors");
    A0RMS_ = iConfig.getParameter<double> ("A0RMS");
    A1RMS_ = iConfig.getParameter<double> ("A1RMS");
    probExtreme_ = iConfig.getParameter<double> ("probExtreme");
@@ -174,7 +175,7 @@ int QCDBkgRS::GetIndex(const double& x, const std::vector<double>* vec) {
 // pt resolution for KinFitter
 double QCDBkgRS::JetResolution_Pt2(const double& pt, const double& eta, const int& i) {
    int i_jet;
-   i < 2 ? i_jet = i : i_jet = 2;
+   i < 1 ? i_jet = i : i_jet = 0;
    int i_eta = GetIndex(eta, &EtaBinEdges_);
    //return pow(pt, 2) * pow(smearFunc_->getSigmaPtScaledForRebalancing(i_jet, i_eta)->Eval(pt), 2);
    return pow(pt, 2) * pow(smearFunc_->getSigmaPtForRebalancing(i_jet, i_eta)->Eval(pt), 2);
@@ -185,7 +186,7 @@ double QCDBkgRS::JetResolution_Pt2(const double& pt, const double& eta, const in
 // relative pt resolution for KinFitter
 double QCDBkgRS::JetResolution_Ptrel(const double& pt, const double& eta, const int& i) {
    int i_jet;
-   i < 2 ? i_jet = i : i_jet = 2;
+   i < 1 ? i_jet = i : i_jet = 0;
    int i_eta = GetIndex(eta, &EtaBinEdges_);
    return smearFunc_->getSigmaPtScaledForRebalancing(i_jet, i_eta)->Eval(pt);
 }
@@ -193,17 +194,23 @@ double QCDBkgRS::JetResolution_Ptrel(const double& pt, const double& eta, const 
 
 //--------------------------------------------------------------------------
 // eta resolution for KinFitter
-double QCDBkgRS::JetResolution_Eta2(const double& e, const double& eta) {
-   //may be artifically reduced (no angular fit)
-   return (pow(0.07 / TMath::Sqrt(e), 2) + pow(0.03, 2));
+double QCDBkgRS::JetResolution_Eta(const double& pt, const double& eta, const int& i, const int& i_flav) {
+   int i_jet;
+   i < 1 ? i_jet = i : i_jet = 0;
+   int i_eta = GetIndex(eta, &EtaBinEdges_);
+   int i_Pt = GetIndex(pt, &PtBinEdges_);
+   return smearFunc_->SigmaEtaHist.at(i_flav).at(i_jet).at(i_eta).at(i_Pt);
 }
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
 // phi resolution for KinFitter
-double QCDBkgRS::JetResolution_Phi2(const double& e, const double& eta) {
-   //may be artifically reduced (no angular fit)
-   return (pow(0.3 / TMath::Sqrt(e), 2) + pow(0.02, 2));
+double QCDBkgRS::JetResolution_Phi(const double& pt, const double& eta, const int& i, const int& i_flav) {
+   int i_jet;
+   i < 1 ? i_jet = i : i_jet = 0;
+   int i_eta = GetIndex(eta, &EtaBinEdges_);
+   int i_Pt = GetIndex(pt, &PtBinEdges_);
+   return smearFunc_->SigmaPhiHist.at(i_flav).at(i_jet).at(i_eta).at(i_Pt);
 }
 //--------------------------------------------------------------------------
 
@@ -211,7 +218,7 @@ double QCDBkgRS::JetResolution_Phi2(const double& e, const double& eta) {
 // pt resolution for smearing
 double QCDBkgRS::JetResolutionHist_Pt_Smear(const double& pt, const double& eta, const int& i, const double& HT, const int& NJets, const bool btag) {
    int i_jet;
-   i < 2 ? i_jet = i : i_jet = 2;
+   i < 1 ? i_jet = i : i_jet = 0;
    int i_Pt = GetIndex(pt, &PtBinEdges_);
    int i_eta = GetIndex(eta, &EtaBinEdges_);
    
@@ -219,10 +226,12 @@ double QCDBkgRS::JetResolutionHist_Pt_Smear(const double& pt, const double& eta,
    if( btag ){
       // get heavy flavor smear function
       res = smearFunc_->getSmearFunc(1, i_jet, i_eta, i_Pt)->GetRandom();
+      //cout << "B-jet: response " << res << endl;
    }
    else {
       // get no heavy flavor smear function
       res = smearFunc_->getSmearFunc(0, i_jet, i_eta, i_Pt)->GetRandom();
+      //cout << "noB-jet: response " << res << endl;
    }
    
    return res;
@@ -230,20 +239,35 @@ double QCDBkgRS::JetResolutionHist_Pt_Smear(const double& pt, const double& eta,
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
-double QCDBkgRS::GetRebalanceCorrection(double jet_pt)
+double QCDBkgRS::GetRebalanceCorrection(double jet_pt, bool btag)
 {
    if( jet_pt > 1000. ) jet_pt = 999.;
    
    if ( jet_pt > rebalancedJetPt_ ) {
       int i_bin = h_RebCorrectionFactor->FindBin(jet_pt);
       
-      //  cout << "Reco jet pt: " << jet_pt << endl;
-      //cout << "Rebalance correction: " << h_RebCorrectionFactor->GetBinContent(i_bin) << endl;
-      
-      return h_RebCorrectionFactor->GetBinContent(i_bin);
+      if (!useCleverRebalanceCorrectionFactors_){
+         double result = 0;
+         if (btag) {
+            result = h_RebCorrectionFactor_b->GetBinContent(i_bin);
+         } else {
+            result = h_RebCorrectionFactor->GetBinContent(i_bin);
+         }
+         if (result < 0.01) result = 1.;
+         return result;
+      } else {
+         double result = 0;
+         if (btag) {
+            result = h_2DRebCorrectionFactor_b->ProjectionY("py", i_bin, i_bin)->GetRandom();;
+         } else {
+            result = h_2DRebCorrectionFactor->ProjectionY("py", i_bin, i_bin)->GetRandom();;
+         }
+         if (result < 0.01) result = 1.;
+         return result;
+      }
    }
-   
-   else return 1;
+
+   else return 1.;
    
 }
 //--------------------------------------------------------------------------
@@ -292,10 +316,11 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
          double tmppx, tmppy, tmppz, tmpe;
          
          if( useRebalanceCorrectionFactors_ ) {
-            tmppx = it->px()/GetRebalanceCorrection( it->pt() );
-            tmppy = it->py()/GetRebalanceCorrection( it->pt() );
-            tmppz = it->pz()/GetRebalanceCorrection( it->pt() );
-            tmpe = it->energy()/GetRebalanceCorrection( it->pt() );
+            bool btag = (it->bDiscriminator(btagTag_) > btagCut_);
+            tmppx = it->px()/GetRebalanceCorrection( it->pt(), btag );
+            tmppy = it->py()/GetRebalanceCorrection( it->pt(), btag );
+            tmppz = it->pz()/GetRebalanceCorrection( it->pt(), btag );
+            tmpe = it->energy()/GetRebalanceCorrection( it->pt(), btag );
          }
          else {
             tmppx = it->px();
@@ -308,8 +333,8 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
          lvec_m.push_back(lv);
          TMatrixD* cM = new TMatrixD(3, 3);
          (*cM)(0, 0) = JetResolution_Pt2(it->pt(), it->eta(), i);
-         (*cM)(1, 1) = JetResolution_Eta2(it->energy(), it->eta());
-         (*cM)(2, 2) = JetResolution_Phi2(it->energy(), it->eta());
+         (*cM)(1, 1) = pow(JetResolution_Eta(it->pt(), it->eta(), 0, 0), 2);
+         (*cM)(2, 2) = pow(JetResolution_Phi(it->pt(), it->eta(), 0, 0), 2);
          covMat_m.push_back(cM);
          char name[10];
          sprintf(name, "jet%i", i);
@@ -353,6 +378,7 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
    myFit->setMaxF(0.01 * 2);
    myFit->setMaxDeltaS(1.e-3);
    myFit->fit();
+   
    //cout << "KinFitter: " << myFit->getStatus() << endl;
    int status = myFit->getStatus();
    
@@ -432,11 +458,18 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          int i_jet = 0;
          for (std::vector<pat::Jet>::const_iterator it = Jets_reb.begin(); it != Jets_reb.end(); ++it) {
             if (it->pt() > smearedJetPt_) {
-               double newPt = 0;
                bool btag = (it->bDiscriminator(btagTag_) > btagCut_);
-               newPt = it->pt() * JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btag);
-               double newEta = rand_->Gaus(it->eta(), TMath::Sqrt(JetResolution_Eta2(it->energy(), it->eta())));
-               double newPhi = rand_->Gaus(it->phi(), TMath::Sqrt(JetResolution_Phi2(it->energy(), it->eta())));
+               int i_flav = 0;
+               if (btag){
+                  i_flav = 1;
+                  //cout << "b-tagged" << endl;
+               }
+               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btag);
+               double newE = it->energy() * scale;
+               double newMass = it->mass() * scale;
+               double newEta = rand_->Gaus(it->eta(), JetResolution_Eta(it->pt(), it->eta(), i_jet, i_flav));
+               double newPhi = rand_->Gaus(it->phi(), JetResolution_Phi(it->pt(), it->eta(), i_jet, i_flav));
+               double newPt = sqrt(newE*newE-newMass*newMass)/cosh(newEta);
                //double newEta = it->eta();
                //double newPhi = it->phi();
                pat::Jet::PolarLorentzVector newP4(newPt, newEta, newPhi, it->mass());
@@ -491,7 +524,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
-void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, std::vector<reco::GenJet> &GenJets_smeared) {
+void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat::PackedGenParticle>* genParticles, std::vector<reco::GenJet> &GenJets_smeared) {
    
    double dPx = 0;
    double dPy = 0;
@@ -523,12 +556,27 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, std::vector<re
          
          for (edm::View<reco::GenJet>::const_iterator it = Jets_gen->begin(); it != Jets_gen->end(); ++it) {
             
-            if (it->pt() > smearedJetPt_) {
-               double newPt = 0;
+            //// Find additional neutrinos and add them back since these are not included in the genJets
+            math::PtEtaPhiMLorentzVector neutrinos(0., 0., 0., 0.);
+            for(edm::View<pat::PackedGenParticle>::const_iterator cand = genParticles->begin(); cand!=genParticles->end(); ++cand)
+            {
+               if ( cand->status()==1 && (abs(cand->pdgId())==12 || abs(cand->pdgId())==14 || abs(cand->pdgId())==16)){
+                  double dR = deltaR(*it, *cand);
+                  if (dR < 0.4) neutrinos += cand->p4();
+               }
+            }
+            
+            if ((it->p4()+neutrinos).pt() > smearedJetPt_) {
                bool btag = genJet_btag[&(*it)];
-               newPt = it->pt() * JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btag);
-               double newEta = rand_->Gaus(it->eta(), TMath::Sqrt(JetResolution_Eta2(it->energy(), it->eta())));
-               double newPhi = rand_->Gaus(it->phi(), TMath::Sqrt(JetResolution_Phi2(it->energy(), it->eta())));
+               int i_flav = 0;
+               if (btag) i_flav = 1;
+               double invScale = (it->p4()+neutrinos).pt() / it->pt();
+               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btag);
+               double newE = it->energy() * scale * invScale;
+               double newMass = it->mass() * scale;
+               double newEta = rand_->Gaus(it->eta(), JetResolution_Eta(it->pt(), it->eta(), i_jet, i_flav));
+               double newPhi = rand_->Gaus(it->phi(), JetResolution_Phi(it->pt(), it->eta(), i_jet, i_flav));
+               double newPt = sqrt(newE*newE-newMass*newMass)/cosh(newEta);
                //double newEta = it->eta();
                //double newPhi = it->phi();
                reco::GenJet::PolarLorentzVector newP4(newPt, newEta, newPhi, it->mass());
@@ -1008,6 +1056,11 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByLabel(jets_, Jets);
    edm::View<pat::Jet> Jets_rec = *Jets;
    
+   //GenParticles
+   edm::Handle<edm::View<pat::PackedGenParticle> > gp;
+   iEvent.getByLabel("packedGenParticles", gp);
+   edm::View<pat::PackedGenParticle> genParticles = *gp;
+   
    // collection of rebalanced jets
    std::auto_ptr<vector<pat::Jet> > Jets_reb(new vector<pat::Jet> );
    
@@ -1016,7 +1069,6 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    
    // collection of smeared gen jets
    std::auto_ptr<vector<reco::GenJet> > GenJets_smeared(new vector<reco::GenJet> );
-   
    
    // ------------------------------------------------------------------------ //
    // plots for reco jets
@@ -1360,10 +1412,12 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    // Rebalance multi jet system
    //
    bool isRebalanced = false;
+   
    if (smearCollection_ == "Reco") {
       if (Jets_rec.size() > 2) {
          isRebalanced = RebalanceJets_KinFitter(&Jets_rec, *(Jets_reb.get()));
       }
+      
       if (!isRebalanced) {
          //cout << "Bad event: Not possible to rebalance!" << endl;
          weight_ = 0;
@@ -1420,6 +1474,7 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             vMHThigh_reb -= it->p4();
          }
       }
+      
       if (!isRebalanced) {
          cout << "Bad event: Can't be rebalanced!!!" << endl;
          cout << "Reconstructed: HT, MHT = " << HThigh_rec << ", " << vMHThigh_rec.pt() << endl;
@@ -1491,15 +1546,30 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                
                if (controlPlots_ && weight_ < 30000) {
                   if (dRmin < 0.15) {
+                     //// Find additional neutrinos and add them back since these are not included in the genJets
+                     math::PtEtaPhiMLorentzVector neutrinos(0., 0., 0., 0.);
+                     for(edm::View<pat::PackedGenParticle>::const_iterator cand = genParticles.begin(); cand!=genParticles.end(); ++cand)
+                     {
+                        if ( cand->status()==1 && (abs(cand->pdgId())==12 || abs(cand->pdgId())==14 || abs(cand->pdgId())==16)){
+                           double dR = deltaR(*it, *cand);
+                           if (dR < 0.4) neutrinos += cand->p4();
+                        }
+                     }
+                     
                      // resolution of reb jets compared to gen jets
                      if (fabs(it->eta()) < 1.5)
-                        h_RebJetRes_Pt->Fill(it->pt(), matchedJet->pt() / it->pt(), weight_);
+                        h_RebJetRes_Pt->Fill((it->p4()+neutrinos).pt(), matchedJet->pt() / (it->p4()+neutrinos).pt(), weight_);
                      if (it->pt() > 100.)
-                        h_RebJetRes_Eta->Fill(it->eta(), matchedJet->pt() / it->pt(), weight_);
+                        h_RebJetRes_Eta->Fill(it->eta(), matchedJet->pt() / (it->p4()+neutrinos).pt(), weight_);
                      
                      // get correction factor for rebalancing vs. reco jet pt
                      if(dRmin_reco < 0.15) {
-                        h_RebCorrection_vsReco->Fill(matchedJet_reco->pt(), matchedJet->pt() / it->pt(), weight_);
+                        if (matchedJet->bDiscriminator(btagTag_) > btagCut_){
+                           h_RebCorrection_vsReco_b->Fill(matchedJet_reco->pt(), matchedJet->pt() / (it->p4()+neutrinos).pt(), weight_);
+                        }
+                        else {
+                           h_RebCorrection_vsReco->Fill(matchedJet_reco->pt(), matchedJet->pt() / (it->p4()+neutrinos).pt(), weight_);
+                        }
                      }
                   }
                }
@@ -1538,7 +1608,7 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
          }
       }
-      SmearingGenJets(&Jets_gen, *(GenJets_smeared.get()));
+      SmearingGenJets(&Jets_gen, &genParticles, *(GenJets_smeared.get()));
    }
    
    // plots for smeared jets
@@ -1660,7 +1730,6 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          }
       }
    }
-   
 }
 //--------------------------------------------------------------------------
 
@@ -1743,6 +1812,8 @@ void QCDBkgRS::beginJob()
       
       h_RebCorrection_vsReco = fs->make<TH2F> ("RebCorrection_vsReco", "Jet pt", 1000, 0., 1000., 100, 0., 3.);
       h_RebCorrection_vsReco->Sumw2();
+      h_RebCorrection_vsReco_b = fs->make<TH2F> ("RebCorrection_vsReco_b", "Jet pt", 1000, 0., 1000., 100, 0., 3.);
+      h_RebCorrection_vsReco_b->Sumw2();
       
       h_RecJetMatched_Pt = fs->make<TH1F> ("RecJetMatched_Pt", "RecJetMatched_Pt", 1000, 0., 1000.);
       h_RecJetMatched_Pt->Sumw2();
@@ -1878,8 +1949,13 @@ void QCDBkgRS::beginJob()
    }
    
    //// get rebalance correction histo
-   TFile *f_rebCorr = new TFile(RebalanceCorrectionFile_.c_str(), "READ", "", 0);
-   h_RebCorrectionFactor = (TH1F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco_px");
+   if( useRebalanceCorrectionFactors_ ) {
+      TFile *f_rebCorr = new TFile(RebalanceCorrectionFile_.c_str(), "READ", "", 0);
+      h_RebCorrectionFactor = (TH1F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco_px");
+      h_RebCorrectionFactor_b = (TH1F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco_b_px");
+      h_2DRebCorrectionFactor = (TH2F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco");
+      h_2DRebCorrectionFactor_b = (TH2F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco_b");
+   }
    
    // define output tree
    PredictionTree = fs->make<TTree> ("QCDPrediction", "QCDPrediction", 0);

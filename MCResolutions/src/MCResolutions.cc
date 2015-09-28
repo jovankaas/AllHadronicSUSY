@@ -30,11 +30,6 @@ MCResolutions::MCResolutions(const edm::ParameterSet& iConfig) {
    _btagCut = iConfig.getParameter<double> ("btagCut");
    _genJetTag = iConfig.getParameter<edm::InputTag> ("genJetTag");
    _weightName = iConfig.getParameter<edm::InputTag> ("weightName");
-   _jetMultPtCut = iConfig.getParameter<double> ("jetMultPtCut");
-   _jetMultEtaCut = iConfig.getParameter<double> ("jetMultEtaCut");
-   _deltaPhiDiJet = iConfig.getParameter<double> ("deltaPhiDiJet");
-   _absCut3rdJet = iConfig.getParameter<double> ("absCut3rdJet");
-   _relCut3rdJet = iConfig.getParameter<double> ("relCut3rdJet");
    _deltaRMatch = iConfig.getParameter<double> ("deltaRMatch");
    _deltaRMatchVeto = iConfig.getParameter<double> ("deltaRMatchVeto");
    _absPtVeto = iConfig.getParameter<double> ("absPtVeto");
@@ -96,39 +91,17 @@ MCResolutions::MCResolutions(const edm::ParameterSet& iConfig) {
     */
    
    //// Array of histograms for jet resolutions (all jet multiplicities)
-   ResizeHistoVector(h_tot_DiJet_JetResPt_Pt);
-   ResizeHistoVector(h_b_DiJet_JetResPt_Pt);
-   ResizeHistoVector(h_nob_DiJet_JetResPt_Pt);
-   
-   //// Array of histograms for jet resolutions (all jet multiplicities)
    ResizeHistoVector(h_tot_JetAll_JetResPt_Pt);
    ResizeHistoVector(h_b_JetAll_JetResPt_Pt);
    ResizeHistoVector(h_nob_JetAll_JetResPt_Pt);
+
+   ResizeHistoVector(h_tot_JetAll_JetResPhi_Pt);
+   ResizeHistoVector(h_b_JetAll_JetResPhi_Pt);
+   ResizeHistoVector(h_nob_JetAll_JetResPhi_Pt);
    
-   //// Array of histograms for jet resolutions (first jet)
-   ResizeHistoVector(h_tot_Jet1_JetResPt_Pt);
-   ResizeHistoVector(h_b_Jet1_JetResPt_Pt);
-   ResizeHistoVector(h_nob_Jet1_JetResPt_Pt);
-   
-   //// Array of histograms for jet resolutions (second jet)
-   ResizeHistoVector(h_tot_Jet2_JetResPt_Pt);
-   ResizeHistoVector(h_b_Jet2_JetResPt_Pt);
-   ResizeHistoVector(h_nob_Jet2_JetResPt_Pt);
-   
-   //// Array of histograms for jet resolutions (third jet)
-   ResizeHistoVector(h_tot_Jet3_JetResPt_Pt);
-   ResizeHistoVector(h_b_Jet3_JetResPt_Pt);
-   ResizeHistoVector(h_nob_Jet3_JetResPt_Pt);
-   
-   //// Array of histograms for jet resolutions (fourth jet)
-   ResizeHistoVector(h_tot_Jet4_JetResPt_Pt);
-   ResizeHistoVector(h_b_Jet4_JetResPt_Pt);
-   ResizeHistoVector(h_nob_Jet4_JetResPt_Pt);
-   
-   //// Array of histograms for jet resolutions (fifth+ jet)
-   ResizeHistoVector(h_tot_Jet5p_JetResPt_Pt);
-   ResizeHistoVector(h_b_Jet5p_JetResPt_Pt);
-   ResizeHistoVector(h_nob_Jet5p_JetResPt_Pt);
+   ResizeHistoVector(h_tot_JetAll_JetResEta_Pt);
+   ResizeHistoVector(h_b_JetAll_JetResEta_Pt);
+   ResizeHistoVector(h_nob_JetAll_JetResEta_Pt);
    
 }
 
@@ -169,54 +142,13 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
    edm::Handle<edm::View<pat::Jet> > Jets_rec;
    iEvent.getByLabel(_jetTag, Jets_rec);
    
-   edm::Handle<reco::GenParticleCollection> genParticles;
-   iEvent.getByLabel("genParticles", genParticles);
+   edm::Handle<edm::View<pat::PackedGenParticle> > genParticles;
+   iEvent.getByLabel("packedGenParticles", genParticles);
    
-   //// Do DiJet selection
-   bool isDiJet = false;
-   const reco::GenJet* gj1 = 0;
-   const reco::GenJet* gj2 = 0;
-   const reco::GenJet* gj3 = 0;
-   int k = 0;
-   for (edm::View<reco::GenJet>::const_iterator it = Jets_gen->begin(); it != Jets_gen->end(); ++it) {
-      ++k;
-      if (k == 1)
-         gj1 = &(*it);
-      if (k == 2)
-         gj2 = &(*it);
-      if (k == 3) {
-         gj3 = &(*it);
-         break;
-      }
-   }
-   if (k > 1) {
-      if (deltaPhi(gj1->phi(), gj2->phi()) > _deltaPhiDiJet) {
-         if (k == 2)
-            isDiJet = true;
-         if (k == 3) {
-            //if (gj3->pt()<(_relCut3rdJet*(gj1->pt()+gj2->pt())/2)){
-            if (gj3->pt() < (_relCut3rdJet * gj1->pt())) {
-               isDiJet = true;
-            }
-         }
-      }
-   }
-   
-   //// Calculate jet multiplicity
-   double NGenJet = 0;
-   for (edm::View<reco::GenJet>::const_iterator it = Jets_gen-> begin(); it != Jets_gen-> end(); ++it) {
-      //cout << "GEN: " << it->pt() << ", " << it->eta() << endl;
-      if (it->pt() > _jetMultPtCut && abs(it->eta()) < _jetMultEtaCut)
-         ++NGenJet;
-   }
-   
-   int JetNo = 0;
    for (edm::View<reco::GenJet>::const_iterator it = Jets_gen->begin(); it != Jets_gen->end(); ++it) {
       
       if (it->pt() < _GenJetPtCut) continue;
       
-      ++JetNo;
-
       //// First look if there is no significant GenJet near the tested GenJet
       double dRgenjet = 999.;
       double PtdRmin = 0;
@@ -258,79 +190,46 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       //// look if there is no further significant CaloJet near the genJet
       if (dRmatched < _deltaRMatch && (nearestJet == 0 || dRnearest > _deltaRMatchVeto || (nearestJet->pt() < _absPtVeto && nearestJet->pt() / matchedJet->pt() < _relPtVeto))) {
       //if (dRmatched < _deltaRMatch) {
-         double res = matchedJet->pt() / it->pt();
+         //// Find additional neutrinos and add them back since these are not included in the genJets
+         math::PtEtaPhiMLorentzVector neutrinos(0., 0., 0., 0.);
+         for(edm::View<pat::PackedGenParticle>::const_iterator cand = genParticles->begin(); cand!=genParticles->end(); ++cand)
+         {
+            if ( cand->status()==1 && (abs(cand->pdgId())==12 || abs(cand->pdgId())==14 || abs(cand->pdgId())==16)){
+               double dR = deltaR(*it, *cand);
+               if (dR < 0.4) neutrinos += cand->p4();
+            }
+         }
+
+         
+         double res = matchedJet->pt() / (it->p4()+neutrinos).pt();
+         double resPhi = matchedJet->phi() - it->phi();
+         double resEta = matchedJet->eta() - it->eta();
          //double res = allJetsInCone.pt() / it->pt();
          h_tot_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         if (isDiJet && JetNo < 3) {
-            h_tot_DiJet_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         }
-         if (JetNo == 1) {
-            h_tot_Jet1_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         }
-         if (JetNo == 2) {
-            h_tot_Jet2_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         }
-         if (JetNo == 3) {
-            h_tot_Jet3_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         }
-         if (JetNo == 4) {
-            h_tot_Jet4_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         }
-         if (JetNo > 4) {
-            h_tot_Jet5p_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-         }
+         h_tot_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
+         h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          
          //// Use algorithmic matching for heavy flavour ID
          bool bTag = false;
-         if (fabs(matchedJet->partonFlavour()) == 4 || fabs(matchedJet->partonFlavour()) == 5) {
-            bTag = true;
-         }
-
-         //// Use b-tag for heavy flavour ID
-         //if ( matchedJet->bDiscriminator(_btagTag) > _btagCut) {
+         //if (fabs(matchedJet->partonFlavour()) == 4 || fabs(matchedJet->partonFlavour()) == 5) {
          //   bTag = true;
          //}
+
+         //// Use b-tag for heavy flavour ID
+         if ( matchedJet->bDiscriminator(_btagTag) > _btagCut) {
+            bTag = true;
+         }
          
+         if (it->pt() > 100 && bTag) cout << "Btag: " << bTag << ", response (old):" << matchedJet->pt() / it->pt() << ",  response (new): " << res << endl;
+
          if (bTag) {
             h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            if (isDiJet && JetNo < 3) {
-               h_b_DiJet_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 1) {
-               h_b_Jet1_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 2) {
-               h_b_Jet2_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 3) {
-               h_b_Jet3_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 4) {
-               h_b_Jet4_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo > 4) {
-               h_b_Jet5p_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
+            h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
+            h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          } else {
             h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            if (isDiJet && JetNo < 3) {
-               h_nob_DiJet_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 1) {
-               h_nob_Jet1_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 2) {
-               h_nob_Jet2_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 3) {
-               h_nob_Jet3_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo == 4) {
-               h_nob_Jet4_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
-            if (JetNo > 4) {
-               h_nob_Jet5p_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
-            }
+            h_nob_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
+            h_nob_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          }
          
       }
@@ -346,74 +245,36 @@ void MCResolutions::beginJob() {
          char hname[100];
          //// Book histograms (all jet multiplicities)
          sprintf(hname, "h_tot_JetAll_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
+         h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 150, 0., 3.);
          h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
          sprintf(hname, "h_b_JetAll_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
+         h_b_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 150, 0., 3.);
          h_b_JetAll_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
          sprintf(hname, "h_nob_JetAll_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
+         h_nob_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 150, 0., 3.);
          h_nob_JetAll_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         //// Book histograms (DiJets)
-         sprintf(hname, "h_tot_DiJet_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_DiJet_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_tot_DiJet_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_b_DiJet_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_DiJet_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_b_DiJet_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_nob_DiJet_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_DiJet_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_nob_DiJet_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         //// Book histograms (leading jet)
-         sprintf(hname, "h_tot_Jet1_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_Jet1_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_tot_Jet1_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_b_Jet1_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_Jet1_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_b_Jet1_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_nob_Jet1_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_Jet1_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_nob_Jet1_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         //// Book histograms (second jet)
-         sprintf(hname, "h_tot_Jet2_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_Jet2_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_tot_Jet2_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_b_Jet2_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_Jet2_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_b_Jet2_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_nob_Jet2_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_Jet2_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_nob_Jet2_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         //// Book histograms (third jet)
-         sprintf(hname, "h_tot_Jet3_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_Jet3_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_tot_Jet3_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_b_Jet3_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_Jet3_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_b_Jet3_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_nob_Jet3_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_Jet3_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_nob_Jet3_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         //// Book histograms (fourth jet)
-         sprintf(hname, "h_tot_Jet4_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_Jet4_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_tot_Jet4_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_b_Jet4_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_Jet4_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_b_Jet4_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_nob_Jet4_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_Jet4_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_nob_Jet4_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         //// Book histograms (>= fifth jet)
-         sprintf(hname, "h_tot_Jet5p_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_tot_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_tot_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_b_Jet5p_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_b_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_b_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
-         sprintf(hname, "h_nob_Jet5p_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
-         h_nob_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 500, 0., 5.);
-         h_nob_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt)->Sumw2();
+
+         //// Book histograms Phi resolution (all jet multiplicities)
+         sprintf(hname, "h_tot_JetAll_ResponsePhi_Pt%i_Eta%i", i_pt, i_eta);
+         h_tot_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 60, -0.3, 0.3);
+         h_tot_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt)->Sumw2();
+         sprintf(hname, "h_b_JetAll_ResponsePhi_Pt%i_Eta%i", i_pt, i_eta);
+         h_b_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 60, -0.3, 0.3);
+         h_b_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt)->Sumw2();
+         sprintf(hname, "h_nob_JetAll_ResponsePhi_Pt%i_Eta%i", i_pt, i_eta);
+         h_nob_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 60, -0.3, 0.3);
+         h_nob_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt)->Sumw2();
+
+         //// Book histograms Eta resolution (all jet multiplicities)
+         sprintf(hname, "h_tot_JetAll_ResponseEta_Pt%i_Eta%i", i_pt, i_eta);
+         h_tot_JetAll_JetResEta_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 60, -0.3, 0.3);
+         h_tot_JetAll_JetResEta_Pt.at(i_eta).at(i_pt)->Sumw2();
+         sprintf(hname, "h_b_JetAll_ResponseEta_Pt%i_Eta%i", i_pt, i_eta);
+         h_b_JetAll_JetResEta_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 60, -0.3, 0.3);
+         h_b_JetAll_JetResEta_Pt.at(i_eta).at(i_pt)->Sumw2();
+         sprintf(hname, "h_nob_JetAll_ResponseEta_Pt%i_Eta%i", i_pt, i_eta);
+         h_nob_JetAll_JetResEta_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 60, -0.3, 0.3);
+         h_nob_JetAll_JetResEta_Pt.at(i_eta).at(i_pt)->Sumw2();
       }
    }
    
@@ -429,28 +290,16 @@ void MCResolutions::endJob() {
       for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
          // total
          hfile->WriteTObject(h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_tot_DiJet_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_tot_Jet1_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_tot_Jet2_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_tot_Jet3_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_tot_Jet4_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_tot_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt));
+         hfile->WriteTObject(h_tot_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt));
+         hfile->WriteTObject(h_tot_JetAll_JetResEta_Pt.at(i_eta).at(i_pt));
          // with btag
          hfile->WriteTObject(h_b_JetAll_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_b_DiJet_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_b_Jet1_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_b_Jet2_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_b_Jet3_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_b_Jet4_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_b_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt));
+         hfile->WriteTObject(h_b_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt));
+         hfile->WriteTObject(h_b_JetAll_JetResEta_Pt.at(i_eta).at(i_pt));
          // without btag
          hfile->WriteTObject(h_nob_JetAll_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_nob_DiJet_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_nob_Jet1_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_nob_Jet2_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_nob_Jet3_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_nob_Jet4_JetResPt_Pt.at(i_eta).at(i_pt));
-         hfile->WriteTObject(h_nob_Jet5p_JetResPt_Pt.at(i_eta).at(i_pt));
+         hfile->WriteTObject(h_nob_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt));
+         hfile->WriteTObject(h_nob_JetAll_JetResEta_Pt.at(i_eta).at(i_pt));
          
       }
    }

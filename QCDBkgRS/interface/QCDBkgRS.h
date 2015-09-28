@@ -37,6 +37,8 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
@@ -128,12 +130,12 @@ private:
    std::vector<std::vector<TF1*> > SigmaPt_scaled;
    std::vector<double> PtBinEdges_;
    std::vector<double> EtaBinEdges_;
-   std::string inputhist1HF_;
-   std::string inputhist2HF_;
-   std::string inputhist3pHF_;
-   std::string inputhist1NoHF_;
-   std::string inputhist2NoHF_;
-   std::string inputhist3pNoHF_;
+   std::string inputhistPtHF_;
+   std::string inputhistEtaHF_;
+   std::string inputhistPhiHF_;
+   std::string inputhistPtNoHF_;
+   std::string inputhistEtaNoHF_;
+   std::string inputhistPhiNoHF_;
    std::string smearingfile_;
    std::string outputfile_;
    std::string RebalanceCorrectionFile_;
@@ -144,6 +146,7 @@ private:
    bool absoluteTailScaling_;
    bool cleverPrescaleTreating_;
    bool useRebalanceCorrectionFactors_;
+   bool useCleverRebalanceCorrectionFactors_;
    double A0RMS_;
    double A1RMS_;
    double probExtreme_;
@@ -184,8 +187,8 @@ private:
    
    double JetResolution_Pt2(const double&, const double&, const int&);
    double JetResolution_Ptrel(const double&, const double&, const int&);
-   double JetResolution_Eta2(const double&, const double&);
-   double JetResolution_Phi2(const double&, const double&);
+   double JetResolution_Eta(const double&, const double&, const int&, const int&);
+   double JetResolution_Phi(const double&, const double&, const int&, const int&);
    double JetResolutionHist_Pt_Smear(const double&, const double&, const int&,const double&, const int&, const bool);
    int GetIndex(const double&, const std::vector<double>*);
    void FillPredictions(const std::vector<pat::Jet>&, const int&, const double&);
@@ -204,12 +207,12 @@ private:
    void FillDeltaPhiPredictions(const std::vector<pat::Jet>&, math::PtEtaPhiMLorentzVector&); 
    void FillLeadingJetPredictions_gen(const std::vector<reco::GenJet>&); 
    void FillDeltaPhiPredictions_gen(const std::vector<reco::GenJet>&, math::PtEtaPhiMLorentzVector&); 
-   double GetRebalanceCorrection(double jet_pt);
+   double GetRebalanceCorrection(double jet_pt, bool btag);
 
    
    bool RebalanceJets_KinFitter(edm::View<pat::Jet>*, std::vector<pat::Jet> &);
    void SmearingJets(const std::vector<pat::Jet>&, std::vector<pat::Jet> &);
-   void SmearingGenJets(edm::View<reco::GenJet>*, std::vector<reco::GenJet> &);
+   void SmearingGenJets(edm::View<reco::GenJet>*, edm::View<pat::PackedGenParticle>*, std::vector<reco::GenJet> &);
    
    std::string GetName(const std::string plot, const std::string uncert = "", const std::string ptbin = "") const;
    
@@ -225,8 +228,9 @@ private:
    TH2F *h_AddRelJetActivity07GenJet1_GenHT_LowMHT, *h_AddRelJetActivity07GenJet2_GenHT_LowMHT, *h_AddRelJetActivity07GenJet3_GenHT_LowMHT;
    TH2F *h_AddRelJetActivity07GenJet1_GenHT_HighMHT, *h_AddRelJetActivity07GenJet2_GenHT_HighMHT, *h_AddRelJetActivity07GenJet3_GenHT_HighMHT;
 
-   TH2F* h_RebCorrection_vsReco;  
-   TH1F* h_RebCorrectionFactor;
+   TH2F* h_RebCorrection_vsReco, *h_RebCorrection_vsReco_b;
+   TH1F* h_RebCorrectionFactor, *h_RebCorrectionFactor_b;
+   TH2F* h_2DRebCorrectionFactor, *h_2DRebCorrectionFactor_b;
   
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;

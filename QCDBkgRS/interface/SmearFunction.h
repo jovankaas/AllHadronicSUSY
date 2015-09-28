@@ -39,7 +39,10 @@ public:
    TF1* getSigmaPtForRebalancing(int i_jet, int i_eta) const;
    TF1* getSigmaPtScaledForRebalancing(int i_jet, int i_eta) const;
    TH1F* getSmearFunc(int i_flav, int i_jet, int i_eta, int i_Pt) const;
-  
+
+   std::vector<std::vector<std::vector<std::vector<double> > > >SigmaEtaHist;
+   std::vector<std::vector<std::vector<std::vector<double> > > >SigmaPhiHist;
+   
 private:
    typedef std::vector<std::string>::const_iterator StrIter;
 
@@ -62,12 +65,12 @@ private:
    double LowerTailScaling_variation_;
    double UpperTailScaling_variation_;
 
-   std::string inputhist1HF_;
-   std::string inputhist2HF_;
-   std::string inputhist3pHF_;
-   std::string inputhist1NoHF_;
-   std::string inputhist2NoHF_;
-   std::string inputhist3pNoHF_;
+   std::string inputhistPtHF_;
+   std::string inputhistEtaHF_;
+   std::string inputhistPhiHF_;
+   std::string inputhistPtNoHF_;
+   std::string inputhistEtaNoHF_;
+   std::string inputhistPhiNoHF_;
    std::string smearingfile_;
    std::string bprobabilityfile_;
    std::string outputfile_;
@@ -85,6 +88,8 @@ private:
 
    //// vectors of response functions
    std::vector<std::vector<std::vector<std::vector<TH1F*> > > >smearFunc;
+   std::vector<std::vector<std::vector<std::vector<TH1F*> > > >smearFuncEta;
+   std::vector<std::vector<std::vector<std::vector<TH1F*> > > >smearFuncPhi;
    std::vector<std::vector<std::vector<std::vector<TH1F*> > > >smearFunc_Core;
    std::vector<std::vector<std::vector<std::vector<TH1F*> > > >smearFunc_LowerTail;
    std::vector<std::vector<std::vector<std::vector<TH1F*> > > >smearFunc_UpperTail;
@@ -93,7 +98,7 @@ private:
    std::vector<std::vector<std::vector<TF1*> > >SigmaPt;
    std::vector<std::vector<std::vector<TH1F*> > >SigmaPtHist_scaled;
    std::vector<std::vector<std::vector<TF1*> > >SigmaPt_scaled;
-
+   
    std::vector<std::vector<std::vector<TH1F*> > > smearFunc_total;
    std::vector<std::vector<TH1F*> > SigmaPtHist_total;
    std::vector<std::vector<TF1*> > SigmaPt_total;

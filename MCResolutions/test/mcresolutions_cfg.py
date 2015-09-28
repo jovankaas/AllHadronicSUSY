@@ -6,8 +6,8 @@ from AllHadronicSUSY.Utils.CommandLineParams import CommandLineParams
 parameters = CommandLineParams()
 
 runOnMC = parameters.value("is_mc",True)
-dataSetName = parameters.value("dataset_name","/QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM")
-testFileName = parameters.value("test_filename","/store/mc/RunIISpring15DR74/QCD_HT200to300_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/0493E32B-2728-E511-A107-00261894388A.root")
+dataSetName = parameters.value("dataset_name","/QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM")
+testFileName = parameters.value("test_filename","/store/mc/RunIISpring15DR74/QCD_HT700to1000_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/6CE6635E-7016-E511-A22F-0025905938A8.root")
 globalTag = parameters.value("global_tag","MCRUN2_74_V9")+"::All"
 tagName = parameters.value("tag_name","PAT")
 jecFile = parameters.value("jec_file","Summer15_25nsV2_MC")
@@ -54,14 +54,14 @@ process.source = cms.Source("PoolSource",fileNames = cms.untracked.vstring(testF
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 ## --- Setup WeightProducer --------------------------------------------
-from AllHadronicSUSY.WeightProducer.getWeightProducer_cff import getWeightProducer
+from TreeMaker.WeightProducer.getWeightProducer_cff import getWeightProducer
 process.WeightProducer = getWeightProducer(dataSetName)
 process.WeightProducer.Lumi = cms.double(lumi)
 process.WeightProducer.PU = cms.int32(0) # PU: 3 for S10, 2 for S7
 process.WeightProducer.FileNamePUDataDistribution = cms.string("NONE")
 
 ## --- isotrack producer -----------------------------------------------
-from AllHadronicSUSY.Utils.trackIsolationMaker_cfi import trackIsolationFilter
+from TreeMaker.Utils.trackIsolationMaker_cfi import trackIsolationFilter
 
 process.IsolatedElectronTracksVeto = trackIsolationFilter.clone(
                                                                 doTrkIsoVeto= True,
@@ -101,7 +101,7 @@ process.IsolatedPionTracksVeto = trackIsolationFilter.clone(
 
 
 ## --- good leptons producer -------------------------------------------
-from AllHadronicSUSY.Utils.leptonproducer_cfi import leptonproducer
+from TreeMaker.Utils.leptonproducer_cfi import leptonproducer
 process.GoodLeptons = leptonproducer.clone(
                                            MuonTag          = cms.InputTag('slimmedMuons'),
                                            ElectronTag      = cms.InputTag('slimmedElectrons'),
@@ -176,7 +176,7 @@ if len(jecFile)>0:
    )
 
 ## --- good jets producer -----------------------------------------------
-from AllHadronicSUSY.Utils.goodjetsproducer_cfi import GoodJetsProducer
+from TreeMaker.Utils.goodjetsproducer_cfi import GoodJetsProducer
 process.GoodJets = GoodJetsProducer.clone(
                                           TagMode = cms.bool(False),
                                           #JetTag= cms.InputTag('slimmedJets'),
@@ -215,6 +215,7 @@ process.MCReso.leptonTag = mcResoLeptonTag
 process.dump   = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.p = cms.Path(
+                     #process.dump *
                      process.IsolatedElectronTracksVeto *
                      process.IsolatedMuonTracksVeto *
                      process.IsolatedPionTracksVeto *
@@ -224,6 +225,5 @@ process.p = cms.Path(
                      process.GoodPhotons *
                      process.GoodJets *
                      process.WeightProducer *
-                     #process.dump *
                      process.MCReso
                      )

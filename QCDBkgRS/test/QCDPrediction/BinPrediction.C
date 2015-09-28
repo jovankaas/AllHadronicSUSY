@@ -585,7 +585,7 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
       h_exp->GetXaxis()->SetBinLabel(ibin, binname.at(ibin-1).c_str());
    }
    
-   TCanvas *c = new TCanvas("c", "c", 700, 800);
+   TCanvas *c = new TCanvas("c", "c", 1200, 800);
    c->cd();
    TPad *pad1 = new TPad("pad1", "pad1", 0, 0.45, 1, 1);
    pad1->SetFillStyle(4000);
@@ -597,22 +597,22 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
    pad1->SetLeftMargin(0.15);
    pad1->cd();
    
-   TH1F *vFrame1 = pad1->DrawFrame(0.0, 0.1, (double) NBins, 10000.0);
+   TH1F *vFrame1 = pad1->DrawFrame(0.0, 0.1, (double) NBins, 20000.0);
    vFrame1->GetYaxis()->SetTitle("Events");
    vFrame1->GetYaxis()->SetTitleOffset(-1.3);
    vFrame1->GetYaxis()->SetTitleSize(0.15);
    vFrame1->GetYaxis()->SetTitleFont(42);
    vFrame1->GetYaxis()->SetLabelOffset(-0.04);
-   vFrame1->GetYaxis()->SetLabelSize(0.15);
+   vFrame1->GetYaxis()->SetLabelSize(0.05);
    vFrame1->GetYaxis()->SetLabelFont(42);
    vFrame1->GetXaxis()->SetLabelOffset(1.0);
    vFrame1->GetYaxis()->SetTickLength(0.02);
    vFrame1->GetYaxis()->SetTicks("+");
    vFrame1->SetFillStyle(4000);
-   h_pred->Draw("histe");
+   h_pred->Draw("same histe");
    h_exp->Draw("same pe");
    
-   TLatex *title = new TLatex(0., 12000, "Simulation, L = 10 fb^{ -1}, #sqrt{s} = 13 TeV");
+   TLatex *title = new TLatex(0., 30000, "Simulation, L = 10 fb^{ -1}, #sqrt{s} = 13 TeV");
    title->SetNDC(0);
    title->SetTextFont(42);
    title->SetTextSize(0.06);
@@ -620,7 +620,7 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
    
    pad1->cd();
    c->cd();
-   TLegend *leg1 = new TLegend(0.3,0.89,0.45,0.93,NULL,"NDC");
+   TLegend *leg1 = new TLegend(0.7,0.85,0.95,0.93,NULL,"NDC");
    leg1->SetLineColor(0);
    leg1->SetLineStyle(1);
    leg1->SetLineWidth(1);
@@ -664,8 +664,8 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
    h_ratio->SetMarkerStyle(20);
    h_ratio->SetMarkerSize (1.2);
    h_ratio->SetLineWidth(1);
-   h_ratio->SetMinimum(-2);
-   h_ratio->SetMaximum(4.5);
+   h_ratio->SetMinimum(-1.2);
+   h_ratio->SetMaximum(2.2);
    
    for (int ibin=1; ibin<=h_exp->GetNbinsX(); ibin++){
       h_ratio->SetBinContent(ibin, 0);
@@ -691,6 +691,8 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
    vFrame2->GetYaxis()->SetLabelSize(0.06);
    vFrame2->GetYaxis()->SetLabelFont(42);
    vFrame2->GetXaxis()->SetLabelOffset(1.0);
+   vFrame2->GetYaxis()->SetTickLength(-0.02);
+   vFrame2->GetYaxis()->SetTicks("+");
    
    
    h_ratio->SetTitle("");
@@ -704,7 +706,8 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
    h_ratio->Draw("e5");
    ratio->Draw("P0Z");
    
-   c->SaveAs("BinByBinClosure.pdf");
+   c->SaveAs("BinByBinClosure_MGMLM_bestMatching_withRBcorr_pt10_angResNew_withNeutrinos.pdf");
+   //c->SaveAs("BinByBinClosure_test.pdf");
    
 }
 
