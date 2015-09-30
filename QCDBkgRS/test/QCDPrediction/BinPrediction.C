@@ -341,7 +341,6 @@ BinPrediction::BinPrediction(TChain& QCDPrediction, TChain& RA2PreSelection, TSt
    NJets_RA2 = 0;
    BTags_RA2 = 0;
    weight_RA2 = 0;
-   EvtNum_RA2 = 0;
    HT_RA2 = 0;
    MHT_RA2 = 0;
    Jet1Pt_RA2 = 0;
@@ -364,7 +363,6 @@ BinPrediction::BinPrediction(TChain& QCDPrediction, TChain& RA2PreSelection, TSt
    RA2PreSelection.SetBranchAddress("NJets",&NJets_RA2);
    RA2PreSelection.SetBranchAddress("BTags",&BTags_RA2);
    RA2PreSelection.SetBranchAddress("Weight",&weight_RA2);
-   RA2PreSelection.SetBranchAddress("EvtNum",&EvtNum_RA2);
    RA2PreSelection.SetBranchAddress("HT",&HT_RA2);
    RA2PreSelection.SetBranchAddress("MHT",&MHT_RA2);
    RA2PreSelection.SetBranchAddress("Jet1Pt",&Jet1Pt_RA2);
@@ -706,7 +704,7 @@ void BinPrediction::plotClosure(int NBins, std::vector<std::string> binname, std
    h_ratio->Draw("e5");
    ratio->Draw("P0Z");
    
-   c->SaveAs("BinByBinClosure_MGMLM_bestMatching_withRBcorr_pt10_angResNew_withNeutrinos.pdf");
+   c->SaveAs("BinByBinClosure_MGMLM_bestMatching_withCleverRBcorr_pt10_angResNew_withNeutrinos.pdf");
    //c->SaveAs("BinByBinClosure_test.pdf");
    
 }

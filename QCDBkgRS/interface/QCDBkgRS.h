@@ -231,7 +231,8 @@ private:
    TH2F* h_RebCorrection_vsReco, *h_RebCorrection_vsReco_b;
    TH1F* h_RebCorrectionFactor, *h_RebCorrectionFactor_b;
    TH2F* h_2DRebCorrectionFactor, *h_2DRebCorrectionFactor_b;
-  
+   vector <TH1D*> h_2DRebCorrectionFactor_py, h_2DRebCorrectionFactor_b_py;
+   
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;
    TH1F* h_nJets_reb;

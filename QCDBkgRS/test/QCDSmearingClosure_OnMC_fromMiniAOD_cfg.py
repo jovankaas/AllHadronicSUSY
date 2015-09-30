@@ -2,7 +2,7 @@
 # cmsRun mcresolutions_cfg.py data_set=/QCD_HT-500To1000_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM, global_tag=PHYS14_25_V1
 
 ## --- Read parameters --------------------------------------------------
-from AllHadronicSUSY.Utils.CommandLineParams import CommandLineParams
+from TreeMaker.Utils.CommandLineParams import CommandLineParams
 parameters = CommandLineParams()
 
 runOnMC = parameters.value("is_mc",True)
@@ -55,7 +55,7 @@ process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 ## --- Setup WeightProducer --------------------------------------------
 print "*** WeightProducer setup **************************************************"
-from AllHadronicSUSY.WeightProducer.getWeightProducer_cff import getWeightProducer
+from TreeMaker.WeightProducer.getWeightProducer_cff import getWeightProducer
 process.WeightProducer = getWeightProducer(dataSetName)
 process.WeightProducer.Lumi = cms.double(lumi)
 process.WeightProducer.PU = cms.int32(0) # PU: 3 for S10, 2 for S7
@@ -78,7 +78,7 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 # Rebalancing and Smearing configuration
 ###############################################################################
 print "*** R+S Configuration **************************************************"
-process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/c/csander/xxl-af-cms/CMSSW_7_4_6_patch1/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_bestMatching_angles_withNeutrinos.root'
+process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/c/csander/xxl-af-cms/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_bestMatching_angles_withNeutrinos.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
@@ -126,8 +126,8 @@ process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
 ###############################################################################
 
 VarsInt = cms.vstring()
-VarsDouble = cms.vstring()
 VectorInt = cms.vstring()
+VarsDouble = cms.vstring()
 VectorDouble = cms.vstring()
 RecoCandVector = cms.vstring()
 
@@ -382,8 +382,8 @@ process.RA2TreeMaker = TreeMaker.clone(
                                        TreeName       = cms.string("PreSelection"),
                                        VarsRecoCand   = RecoCandVector,
                                        VarsDouble     = VarsDouble,
-                                       VarsInt        = VarsInt,
                                        VectorDouble   = VectorDouble,
+                                       VarsInt        = VarsInt,
                                        VectorInt      = VectorInt,
 )
 ###############################################################################

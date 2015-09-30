@@ -652,7 +652,6 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    NJets_RA2 = 0;
    BTags_RA2 = 0;
    weight_RA2 = 0;
-   EvtNum_RA2 = 0;
    HT_RA2 = 0;
    MHT_RA2 = 0;
    Jet1Pt_RA2 = 0;
@@ -675,7 +674,6 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    RA2PreSelection.SetBranchAddress("NJets",&NJets_RA2);
    RA2PreSelection.SetBranchAddress("BTags",&BTags_RA2);
    RA2PreSelection.SetBranchAddress("Weight",&weight_RA2);
-   RA2PreSelection.SetBranchAddress("EvtNum",&EvtNum_RA2);
    RA2PreSelection.SetBranchAddress("HT",&HT_RA2);
    RA2PreSelection.SetBranchAddress("MHT",&MHT_RA2);
    RA2PreSelection.SetBranchAddress("Jet1Pt",&Jet1Pt_RA2);
@@ -704,7 +702,6 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
       if( weight_RA2 > 30000. ) {
          
          cout << "------------------------------" << endl;
-         cout << "Event: " << EvtNum_RA2 << endl;
          cout << "Weight: " << weight_RA2 << endl;
          cout << "NVtx: " << vtxN_RA2 << endl;
          cout << "NLeptons: " << NLeptons_RA2 << endl;
@@ -948,8 +945,9 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
          }
       }
    }
-   
+   cout << "after filling all histograms" << endl;
    //----------------------------------------------------------//
+   
    
    //----------------------------------------------------------//
    // rebin histos
@@ -1074,6 +1072,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    DoRebinning(DeltaPhi3_JetBin4_baseline_withoutDeltaPhi_pred_raw, DeltaPhi3_JetBin4_baseline_withoutDeltaPhi_sel, 5);
    DoRebinning(minDeltaPhiN_JetBin4_baseline_withoutDeltaPhi_pred_raw, minDeltaPhiN_JetBin4_baseline_withoutDeltaPhi_sel, 5);
    
+   cout << "after rebinning all histograms" << endl;
    //----------------------------------------------------------//
    
    //----------------------------------------------------------//
@@ -1210,6 +1209,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    NBJets_baseline_withoutDeltaPhi_withoutMHT_pred = CalcPrediction(NBJets_baseline_withoutDeltaPhi_withoutMHT_pred_raw);
    NBJets_baseline_withoutDeltaPhi_pred = CalcPrediction(NBJets_baseline_withoutDeltaPhi_pred_raw);
    
+   cout << "after calculation of prediction" << endl;
    //----------------------------------------------------------//
    
    //----------------------------------------------------------//
@@ -1345,6 +1345,8 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    DeltaPhi3_JetBin4_baseline_withoutDeltaPhi_pred->Write();
    minDeltaPhiN_JetBin4_baseline_withoutDeltaPhi_pred->Write();
    
+   cout << "after saving predictions" << endl;
+
    // Save histograms: expectation
    
    HT_presel_sel->Write();
@@ -1473,8 +1475,11 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    DeltaPhi3_JetBin4_baseline_withoutDeltaPhi_sel->Write();
    minDeltaPhiN_JetBin4_baseline_withoutDeltaPhi_sel->Write();
    
+   cout << "after saving expectation" << endl;
+
    prediction_histos->Write();
    
+   cout << "end" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

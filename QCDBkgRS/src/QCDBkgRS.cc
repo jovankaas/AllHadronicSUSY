@@ -258,9 +258,9 @@ double QCDBkgRS::GetRebalanceCorrection(double jet_pt, bool btag)
       } else {
          double result = 0;
          if (btag) {
-            result = h_2DRebCorrectionFactor_b->ProjectionY("py", i_bin, i_bin)->GetRandom();;
+            result = h_2DRebCorrectionFactor_b_py.at(i_bin-1)->GetRandom();;
          } else {
-            result = h_2DRebCorrectionFactor->ProjectionY("py", i_bin, i_bin)->GetRandom();;
+            result = h_2DRebCorrectionFactor_py.at(i_bin-1)->GetRandom();;
          }
          if (result < 0.01) result = 1.;
          return result;
@@ -1955,6 +1955,15 @@ void QCDBkgRS::beginJob()
       h_RebCorrectionFactor_b = (TH1F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco_b_px");
       h_2DRebCorrectionFactor = (TH2F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco");
       h_2DRebCorrectionFactor_b = (TH2F*) f_rebCorr->FindObjectAny("RebCorrection_vsReco_b");
+      //// Do projections for each x-bin
+      for (int ii = 1; ii <= h_2DRebCorrectionFactor_b->GetXaxis()->GetNbins(); ++ii){
+         TH1D* tmp_py = new TH1D(*h_2DRebCorrectionFactor_b->ProjectionY("py", ii, ii));
+         h_2DRebCorrectionFactor_b_py.push_back(tmp_py);
+      }
+      for (int ii = 1; ii <= h_2DRebCorrectionFactor->GetXaxis()->GetNbins(); ++ii){
+         TH1D* tmp_py = new TH1D(*h_2DRebCorrectionFactor->ProjectionY("py", ii, ii));
+         h_2DRebCorrectionFactor_py.push_back(tmp_py);
+      }
    }
    
    // define output tree

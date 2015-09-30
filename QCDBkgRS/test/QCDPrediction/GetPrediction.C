@@ -243,12 +243,14 @@ int main()
    
    pred_ = new Prediction(*prediction, *selection);
    
+   cout << "after prediction in main" << endl;
+   
    TString LumiTitle;
    if( isData ) LumiTitle = "CMS preliminary, L = x.yz fb^{  -1}, #sqrt{s} = 13 TeV";
    else LumiTitle = "CMS Simulation, L = 10 fb^{  -1}, #sqrt{s} = 13 TeV";
    //else LumiTitle = "CMS work in progress, #sqrt{s} = 13 TeV";
    
-   TString postfix = "_MGMLM_bestMatching_withRBcorr_pt10_angResNew_withNeutrinos";
+   TString postfix = "_MGMLM_bestMatching_withCleverRBcorr_pt10_angResNew_withNeutrinos";
    //TString postfix = "_MGMLM_bestMatching_withoutRBcorr_pt10_angRes";
    //TString postfix = "_MGMLM_GenSmear_fineBins_bestMatching_algo_noSeedCut";
    //TString postfix = "_test";
