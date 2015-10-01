@@ -2,7 +2,7 @@
 # cmsRun mcresolutions_cfg.py data_set=/QCD_HT-500To1000_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM, globaltag=PHYS14_25_V1
 
 ## --- Read parameters --------------------------------------------------
-from AllHadronicSUSY.Utils.CommandLineParams import CommandLineParams
+from TreeMaker.Utils.CommandLineParams import CommandLineParams
 parameters = CommandLineParams()
 
 runOnMC = parameters.value("is_mc",True)

@@ -102,6 +102,10 @@ MCResolutions::MCResolutions(const edm::ParameterSet& iConfig) {
    ResizeHistoVector(h_tot_JetAll_JetResEta_Pt);
    ResizeHistoVector(h_b_JetAll_JetResEta_Pt);
    ResizeHistoVector(h_nob_JetAll_JetResEta_Pt);
+
+   // Btag efficiencies
+   h_trueb_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_trueb_btag_RecoPt.resize(EtaBinEdges.size() - 1);
    
 }
 
@@ -210,17 +214,26 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          
          //// Use algorithmic matching for heavy flavour ID
-         bool bTag = false;
+         bool bTrue = false;
          //if (fabs(matchedJet->partonFlavour()) == 4 || fabs(matchedJet->partonFlavour()) == 5) {
-         //   bTag = true;
-         //}
+         if (fabs(matchedJet->partonFlavour()) == 5) {
+            bTrue = true;
+         }
 
          //// Use b-tag for heavy flavour ID
+         bool bTag = false;
          if ( matchedJet->bDiscriminator(_btagTag) > _btagCut) {
             bTag = true;
          }
+         if(bTrue){
+             h_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+             if(bTag){
+                h_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+             }
+         }
+
          
-         if (it->pt() > 100 && bTag) cout << "Btag: " << bTag << ", response (old):" << matchedJet->pt() / it->pt() << ",  response (new): " << res << endl;
+         //if (it->pt() > 100 && bTag) cout << "Btag: " << bTag << ", response (old):" << matchedJet->pt() / it->pt() << ",  response (new): " << res << endl;
 
          if (bTag) {
             h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
@@ -240,9 +253,16 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 // ------------ method called once each job just before starting event loop  ------------
 void MCResolutions::beginJob() {
    
-   for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
-      for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
-         char hname[100];
+   
+   for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
+      char hname[100];
+      // Book histograms b-tag efficiencies
+      sprintf(hname, "h_trueb_RecoPt_Eta%i", i_eta);
+      h_trueb_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      sprintf(hname, "h_trueb_btag_RecoPt_Eta%i", i_eta);
+      h_trueb_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+
+      for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
          //// Book histograms (all jet multiplicities)
          sprintf(hname, "h_tot_JetAll_ResponsePt_Pt%i_Eta%i", i_pt, i_eta);
          h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt) = new TH1F(hname, hname, 150, 0., 3.);
@@ -286,8 +306,11 @@ void MCResolutions::endJob() {
    hfile->cd();
    //hfile->cd(_dirName.c_str());
    // Save all objects in this file
-   for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
-      for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
+   for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
+      // btag efficiencies
+      hfile->WriteTObject(h_trueb_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_trueb_btag_RecoPt.at(i_eta));
+      for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
          // total
          hfile->WriteTObject(h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt));
          hfile->WriteTObject(h_tot_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt));
@@ -300,6 +323,7 @@ void MCResolutions::endJob() {
          hfile->WriteTObject(h_nob_JetAll_JetResPt_Pt.at(i_eta).at(i_pt));
          hfile->WriteTObject(h_nob_JetAll_JetResPhi_Pt.at(i_eta).at(i_pt));
          hfile->WriteTObject(h_nob_JetAll_JetResEta_Pt.at(i_eta).at(i_pt));
+
          
       }
    }
