@@ -139,6 +139,7 @@ private:
    std::string smearingfile_;
    std::string outputfile_;
    std::string RebalanceCorrectionFile_;
+   std::string BTagEfficiencyFile_;
    int NRebin_;
    bool controlPlots_;
    bool isData_;
@@ -146,6 +147,7 @@ private:
    bool absoluteTailScaling_;
    bool cleverPrescaleTreating_;
    bool useRebalanceCorrectionFactors_;
+   bool useBTagEfficiencyFactors_;
    bool useCleverRebalanceCorrectionFactors_;
    double A0RMS_;
    double A1RMS_;
@@ -208,6 +210,8 @@ private:
    void FillLeadingJetPredictions_gen(const std::vector<reco::GenJet>&); 
    void FillDeltaPhiPredictions_gen(const std::vector<reco::GenJet>&, math::PtEtaPhiMLorentzVector&); 
    double GetRebalanceCorrection(double jet_pt, bool btag);
+   double GetBTagEfficiency(double pt, double eta);
+   double ReadXYHist(TH1F* hist, double x);
 
    
    bool RebalanceJets_KinFitter(edm::View<pat::Jet>*, std::vector<pat::Jet> &);
@@ -233,6 +237,11 @@ private:
    TH2F* h_2DRebCorrectionFactor, *h_2DRebCorrectionFactor_b;
    vector <TH1D*> h_2DRebCorrectionFactor_py, h_2DRebCorrectionFactor_b_py;
    
+   // Reweighting of BTagged events with pT dependent
+   // btag efficiency ratios (newpt btag/oldpt btag):
+   TH1F* h_BTagEfficiencyFactor;
+   std::vector<TH1F*> BTagEfficiencyFactors;
+
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;
    TH1F* h_nJets_reb;

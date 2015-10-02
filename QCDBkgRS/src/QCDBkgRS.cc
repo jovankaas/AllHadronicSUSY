@@ -59,6 +59,7 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    inputhistEtaNoHF_ = iConfig.getParameter<std::string> ("InputHistoEta_NoHF");
    inputhistPhiNoHF_ = iConfig.getParameter<std::string> ("InputHistoPhi_NoHF");
    RebalanceCorrectionFile_ = iConfig.getParameter<std::string> ("RebalanceCorrectionFile");
+   BTagEfficiencyFile_ = iConfig.getParameter<std::string> ("BTagEfficiencyFile");
    controlPlots_ = iConfig.getParameter<bool> ("ControlPlots");
    isData_ = iConfig.getParameter<bool> ("IsData");
    isMadgraph_ = iConfig.getParameter<bool> ("IsMadgraph");
@@ -69,6 +70,7 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    absoluteTailScaling_ = iConfig.getParameter<bool> ("absoluteTailScaling");
    cleverPrescaleTreating_ = iConfig.getParameter<bool> ("cleverPrescaleTreating");
    useRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useRebalanceCorrectionFactors");
+   useBTagEfficiencyFactors_ = iConfig.getParameter<bool> ("useBTagEfficiencyFactors");
    useCleverRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useCleverRebalanceCorrectionFactors");
    A0RMS_ = iConfig.getParameter<double> ("A0RMS");
    A1RMS_ = iConfig.getParameter<double> ("A1RMS");
@@ -237,7 +239,7 @@ double QCDBkgRS::JetResolutionHist_Pt_Smear(const double& pt, const double& eta,
    return res;
 }
 //--------------------------------------------------------------------------
-
+// Get Rebalance corrections:
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetRebalanceCorrection(double jet_pt, bool btag)
 {
@@ -271,6 +273,47 @@ double QCDBkgRS::GetRebalanceCorrection(double jet_pt, bool btag)
    
 }
 //--------------------------------------------------------------------------
+
+//double QCDBkgRS::ReadXYHist(TH1F* hist, double x)
+//{
+//   // Given x, return y for a 2d histogram.
+//   cout << "Called ReadXYHist..." << endl;
+//   int the_bin = hist->GetXaxis()->FindBin(x);
+//   if ( hist->IsBinOverflow(the_bin) || hist->IsBinUnderflow(the_bin) ){
+//      // overflow/underflow can be empty
+//      cout << "Warning: Reading from under-/overflow; x=" << x << "bin=" << endl;
+//      // Not optimal; I would like to return the python equiv of None.
+//      // How to do that?
+//      return 0;
+//   }
+//   double y = hist->GetBinContent(the_bin);
+//   cout << "Found eff " << y << " for pt " << x << endl;
+//   return y;
+//}
+
+
+//--------------------------------------------------------------------------
+// Get BTag Efficiencies:
+//--------------------------------------------------------------------------
+//double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
+//{
+//    cout << "Called GetBTagEfficiency..." << endl;
+//    // Set to unrealistic value:
+//    double btageff = 1.;
+//    int eta_bin = GetIndex(eta, &EtaBinEdges_);
+//    h_BTagEfficiencyFactor = BTagEfficiencyFactors[eta_bin];
+//    btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
+//    //btageff = ReadXYHist(h_BTagEfficiencyFactor, pt);
+//    cout << "Found efficiency ratio " << btageff << " for pt " << pt << " and eta " << eta << endl;
+//    
+//    if( btageff == 0.0 ){
+//        // Reset to unrealistic value.
+//        btageff = 1.;
+//    }
+//
+//    return btageff;
+//
+//}
 
 //--------------------------------------------------------------------------
 // rebalance the events using a kinematic fit and transverse momentum balance
@@ -441,7 +484,6 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
    
    double dPx = 0;
    double dPy = 0;
-   
    double HT = calcHT(Jets_reb);
    int NJets_reb = calcNJets(Jets_reb);
    
@@ -454,6 +496,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          w = weight_ / Ntries2;
       }
       for (int j = 1; j <= Ntries2; ++j) {
+         double btag_correction = 1.;
          Jets_smeared.clear();
          int i_jet = 0;
          for (std::vector<pat::Jet>::const_iterator it = Jets_reb.begin(); it != Jets_reb.end(); ++it) {
@@ -464,6 +507,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                   i_flav = 1;
                   //cout << "b-tagged" << endl;
                }
+               // Smearing
                double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btag);
                double newE = it->energy() * scale;
                double newMass = it->mass() * scale;
@@ -472,6 +516,22 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                double newPt = sqrt(newE*newE-newMass*newMass)/cosh(newEta);
                //double newEta = it->eta();
                //double newPhi = it->phi();
+               //Btag corrections
+               if(btag){
+                    //double newBTagEff = GetBTagEfficiency(newPt, newEta);
+                    //double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
+                    double newBTagEff = 1;
+                    double oldBTagEff = 1;
+
+                    // BTag efficiency should be less than 1!
+                    // If btag efficiency is 1, this is because
+                    // it could not be read from the file. Ignore
+                    // and keep correction factor 1:
+                    if (newBTagEff < 1.0 && oldBTagEff < 1.0){
+                        btag_correction *= newBTagEff/oldBTagEff;
+                    }
+               }
+
                pat::Jet::PolarLorentzVector newP4(newPt, newEta, newPhi, it->mass());
                pat::Jet smearedJet(*it);
                smearedJet.setP4(newP4);
@@ -490,7 +550,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          //Fill HT and MHT prediction histos for i-th iteration of smearing
          int NJets = calcNJets(Jets_smeared);
          if (NJets >= NJetsSave_) {
-            FillPredictions(Jets_smeared, i, w);
+            FillPredictions(Jets_smeared, i, w*btag_correction);
             
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
                PredictionTree->Fill();
@@ -1965,6 +2025,22 @@ void QCDBkgRS::beginJob()
          h_2DRebCorrectionFactor_py.push_back(tmp_py);
       }
    }
+
+   // get btag efficiency correction histo
+   //if( useBTagEfficiencyFactors_ ){
+   //    cout << "Reading efficiency factors from file..." << endl;
+   //    char hname[100];
+   //    TFile *f_btags = new TFile(BTagEfficiencyFile_.c_str(), "READ", "", 0);
+   //    // Get histogram for each eta bin:
+   //    for( int e_eta = 0; e_eta < 12; ++e_eta ){
+   //         sprintf(hname, "BTrue_BTag_vs_RecoPt_Eta%i;1", e_eta);
+   //         if(f_btags->FindObjectAny(hname)){
+   //             BTagEfficiencyFactors.push_back((TH1F*) f_btags->FindObjectAny(hname));
+   //         }
+   //    }
+   //    cout << "Read efficiency factors from file." << endl;
+   //}
+
    
    // define output tree
    PredictionTree = fs->make<TTree> ("QCDPrediction", "QCDPrediction", 0);

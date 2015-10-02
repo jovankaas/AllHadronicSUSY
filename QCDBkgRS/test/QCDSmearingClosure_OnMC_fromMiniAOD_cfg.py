@@ -78,7 +78,8 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 # Rebalancing and Smearing configuration
 ###############################################################################
 print "*** R+S Configuration **************************************************"
-process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/c/csander/xxl-af-cms/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_bestMatching_angles_withNeutrinos.root'
+process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_bestMatching_DeadECALTP.root'
+##'/afs/desy.de/user/c/csander/xxl-af-cms/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_bestMatching_angles_withNeutrinos.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
@@ -89,6 +90,7 @@ process.QCDfromSmearing.InputHistoPt_NoHF = 'h_nob_JetAll_ResponsePt'
 process.QCDfromSmearing.InputHistoEta_NoHF = 'h_nob_JetAll_ResponseEta'
 process.QCDfromSmearing.InputHistoPhi_NoHF = 'h_nob_JetAll_ResponsePhi'
 process.QCDfromSmearing.RebalanceCorrectionFile = '/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
+process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/BTagEfficiencies_Spring15MadGraph.root'
 process.QCDfromSmearing.NRebin = 1
 process.QCDfromSmearing.SmearCollection = 'Reco'
 process.QCDfromSmearing.PtBinEdges_scaling = cms.vdouble(0., 7000.)
@@ -114,6 +116,7 @@ process.QCDfromSmearing.MHTSave = cms.double(0.)
 #process.QCDfromSmearing.MHTSave = cms.double(200.)
 process.QCDfromSmearing.cleverPrescaleTreating = False
 process.QCDfromSmearing.useRebalanceCorrectionFactors = True
+process.QCDfromSmearing.useBTagEfficiencyFactors = True
 process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = True
 process.QCDfromSmearing.MHTcut_low = cms.double(200.)
 process.QCDfromSmearing.MHTcut_medium = cms.double(350.)

@@ -259,8 +259,10 @@ void MCResolutions::beginJob() {
       // Book histograms b-tag efficiencies
       sprintf(hname, "h_trueb_RecoPt_Eta%i", i_eta);
       h_trueb_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_trueb_RecoPt.at(i_eta)->Sumw2();
       sprintf(hname, "h_trueb_btag_RecoPt_Eta%i", i_eta);
       h_trueb_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_trueb_btag_RecoPt.at(i_eta)->Sumw2();
 
       for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
          //// Book histograms (all jet multiplicities)
