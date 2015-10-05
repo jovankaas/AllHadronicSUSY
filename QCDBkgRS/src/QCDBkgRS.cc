@@ -29,6 +29,7 @@
 //--------------------------------------------------------------------------
 QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
 {
+   cout << "started" << endl;
    rebalancedJetPt_ = iConfig.getParameter<double> ("RebalanceJetPt");
    rebalanceMode_ = iConfig.getParameter<std::string> ("RebalanceMode");
    nSmearedJets_ = iConfig.getParameter<int> ("NSmearedJets");
@@ -122,7 +123,10 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    rand_ = new TRandom3(0);
    
    // get object of class SmearFunction
+   cout << "Get smearfunction" << endl;
    smearFunc_ = new SmearFunction(iConfig);
+
+   cout << "Set seeds, got smearfunction" << endl;
 }
 //--------------------------------------------------------------------------
 
@@ -496,6 +500,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          w = weight_ / Ntries2;
       }
       for (int j = 1; j <= Ntries2; ++j) {
+         cout << "will set b-tag correction to 1" << endl;
          double btag_correction = 1.;
          Jets_smeared.clear();
          int i_jet = 0;
@@ -517,20 +522,20 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                //double newEta = it->eta();
                //double newPhi = it->phi();
                //Btag corrections
-               if(btag){
-                    //double newBTagEff = GetBTagEfficiency(newPt, newEta);
-                    //double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
-                    double newBTagEff = 1;
-                    double oldBTagEff = 1;
+               //if(btag){
+               //     //double newBTagEff = GetBTagEfficiency(newPt, newEta);
+               //     //double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
+               //     double newBTagEff = 1;
+               //     double oldBTagEff = 1;
 
-                    // BTag efficiency should be less than 1!
-                    // If btag efficiency is 1, this is because
-                    // it could not be read from the file. Ignore
-                    // and keep correction factor 1:
-                    if (newBTagEff < 1.0 && oldBTagEff < 1.0){
-                        btag_correction *= newBTagEff/oldBTagEff;
-                    }
-               }
+               //     // BTag efficiency should be less than 1!
+               //     // If btag efficiency is 1, this is because
+               //     // it could not be read from the file. Ignore
+               //     // and keep correction factor 1:
+               //     if (newBTagEff < 1.0 && oldBTagEff < 1.0){
+               //         btag_correction *= newBTagEff/oldBTagEff;
+               //     }
+               //}
 
                pat::Jet::PolarLorentzVector newP4(newPt, newEta, newPhi, it->mass());
                pat::Jet smearedJet(*it);
@@ -1797,6 +1802,8 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 // ------------ method called once each job just before starting event loop  ------------
 void QCDBkgRS::beginJob()
 {
+
+    cout << "Will begin job..." << endl;
    
    debug = 0;
    
@@ -2026,6 +2033,7 @@ void QCDBkgRS::beginJob()
       }
    }
 
+   cout << "will read b-tag correction factors from file" << endl;
    // get btag efficiency correction histo
    //if( useBTagEfficiencyFactors_ ){
    //    cout << "Reading efficiency factors from file..." << endl;
