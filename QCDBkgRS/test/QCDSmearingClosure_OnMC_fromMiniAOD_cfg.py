@@ -1,5 +1,5 @@
-# Expects a file name as argument e.g.
-# cmsRun mcresolutions_cfg.py data_set=/QCD_HT-500To1000_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM, global_tag=PHYS14_25_V1
+# For testing do:
+# cmsRun QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
 
 ## --- Read parameters --------------------------------------------------
 from TreeMaker.Utils.CommandLineParams import CommandLineParams
@@ -89,11 +89,12 @@ process.QCDfromSmearing.InputHistoPhi_HF = 'h_b_JetAll_ResponsePhi'
 process.QCDfromSmearing.InputHistoPt_NoHF = 'h_nob_JetAll_ResponsePt'
 process.QCDfromSmearing.InputHistoEta_NoHF = 'h_nob_JetAll_ResponseEta'
 process.QCDfromSmearing.InputHistoPhi_NoHF = 'h_nob_JetAll_ResponsePhi'
-process.QCDfromSmearing.RebalanceCorrectionFile = '/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
+process.QCDfromSmearing.RebalanceCorrectionFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withBTagCorrections_pt10.root'
+#'/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
 process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/BTagEfficiencies_Spring15MadGraph.root'
 process.QCDfromSmearing.NRebin = 1
-#process.QCDfromSmearing.SmearCollection = 'Reco'
-process.QCDfromSmearing.SmearCollection = 'Gen'
+process.QCDfromSmearing.SmearCollection = 'Reco'
+#process.QCDfromSmearing.SmearCollection = 'Gen'
 process.QCDfromSmearing.PtBinEdges_scaling = cms.vdouble(0., 7000.)
 process.QCDfromSmearing.EtaBinEdges_scaling = cms.vdouble(0.0, 5.0)
 process.QCDfromSmearing.AdditionalSmearing = cms.vdouble(1.0)
@@ -116,9 +117,9 @@ process.QCDfromSmearing.MHTSave = cms.double(0.)
 #process.QCDfromSmearing.HTSave = cms.double(500.)
 #process.QCDfromSmearing.MHTSave = cms.double(200.)
 process.QCDfromSmearing.cleverPrescaleTreating = False
-process.QCDfromSmearing.useRebalanceCorrectionFactors = False
+process.QCDfromSmearing.useRebalanceCorrectionFactors = True
 process.QCDfromSmearing.useBTagEfficiencyFactors = True
-process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = True
+process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = False
 process.QCDfromSmearing.MHTcut_low = cms.double(200.)
 process.QCDfromSmearing.MHTcut_medium = cms.double(350.)
 process.QCDfromSmearing.MHTcut_high = cms.double(500.)

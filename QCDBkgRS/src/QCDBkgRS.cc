@@ -282,7 +282,7 @@ double QCDBkgRS::GetRebalanceCorrection(double jet_pt, bool btag)
 double QCDBkgRS::ReadXYHist(TH1F* hist, double x)
 {
    // Given x, return y for a 2d histogram.
-   cout << "Called ReadXYHist..." << endl;
+   //cout << "Called ReadXYHist..." << endl;
    int the_bin = hist->GetXaxis()->FindBin(x);
    if ( hist->IsBinOverflow(the_bin) || hist->IsBinUnderflow(the_bin) ){
       // overflow/underflow can be empty
@@ -301,14 +301,14 @@ double QCDBkgRS::ReadXYHist(TH1F* hist, double x)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
 {
-    cout << "Called GetBTagEfficiency..." << endl;
+    //cout << "Called GetBTagEfficiency..." << endl;
     // Set to unrealistic value:
     double btageff = 1.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_BTagEfficiencyFactor = BTagEfficiencyFactors[eta_bin];
     //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     btageff = ReadXYHist(h_BTagEfficiencyFactor, pt);
-    cout << "Found efficiency ratio " << btageff << " for pt " << pt << " and eta " << eta << endl;
+    //cout << "Found efficiency ratio " << btageff << " for pt " << pt << " and eta " << eta << endl;
 
     if( btageff == 0.0 ){
         // Reset to unrealistic value.
@@ -611,6 +611,8 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
       }
       for (int j = 1; j <= Ntries2; ++j) {
 
+         double btag_correction = 1.;
+
          GenJets_smeared.clear();
          std::map <const reco::GenJet*, bool> genJet2_btag;
 
@@ -641,6 +643,20 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                double newPt = sqrt(newE*newE-newMass*newMass)/cosh(newEta);
                //double newEta = it->eta();
                //double newPhi = it->phi();
+               //
+               //Btag corrections
+               if(btag){
+                    double newBTagEff = GetBTagEfficiency(newPt, newEta);
+                    double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
+
+                    // BTag efficiency should be less than 1!
+                    // If btag efficiency is 1, this is because
+                    // it could not be read from the file. Ignore
+                    // and do not change current correction factor:
+                    if (newBTagEff < 1.0 && oldBTagEff < 1.0){
+                        btag_correction *= newBTagEff/oldBTagEff;
+                    }
+               }
                reco::GenJet::PolarLorentzVector newP4(newPt, newEta, newPhi, it->mass());
                reco::GenJet smearedJet(*it);
                smearedJet.setP4(newP4);
@@ -660,7 +676,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          //Fill HT and MHT prediction histos for i-th iteration of smearing
          int NJets = calcNJets_gen(GenJets_smeared);
          if (NJets >= NJetsSave_) {
-            FillPredictions_gen(GenJets_smeared, i, w, genJet2_btag);
+            FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
 
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
                PredictionTree->Fill();

@@ -35,7 +35,7 @@ void GetRebalanceCorrectionFactor()
    TString pt = "pt10";
    double x_min = 10.;
 
-   TString outfile = "RebalanceCorrectionFactor/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_" + pt;
+   TString outfile = "RebalanceCorrectionFactor/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withBTagCorrections_" + pt;
 
    TH2F* RebCorrection_vsReco = new TH2F("RebCorrection_vsReco", "Jet pt", 1000, 0., 1000., 100, 0., 3.);
    TH2F* RebCorrection_vsReco_b = new TH2F("RebCorrection_vsReco_b", "Jet pt", 1000, 0., 1000., 100, 0., 3.);
@@ -48,6 +48,9 @@ void GetRebalanceCorrectionFactor()
       while( myfile.good() ) {
          getline (myfile,root_file);
          cout << root_file << endl;
+         if(root_file == ""){
+             continue;
+         }
                      
          TH2F* RebCorrection_vsReco_temp; 
          TH2F* RebCorrection_vsReco_b_temp;
