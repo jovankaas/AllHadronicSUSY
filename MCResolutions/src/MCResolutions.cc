@@ -105,7 +105,13 @@ MCResolutions::MCResolutions(const edm::ParameterSet& iConfig) {
 
    // Btag efficiencies
    h_trueb_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_no_trueb_RecoPt.resize(EtaBinEdges.size() - 1);
    h_trueb_btag_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_no_trueb_btag_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_no_trueb_no_btag_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_trueb_no_btag_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_btag_RecoPt.resize(EtaBinEdges.size() - 1);
+   h_no_btag_RecoPt.resize(EtaBinEdges.size() - 1);
    
 }
 
@@ -224,18 +230,33 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          bool bTag = false;
          if ( matchedJet->bDiscriminator(_btagTag) > _btagCut) {
             bTag = true;
+            h_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+         } else {
+            h_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
          }
+
          if(bTrue){
              h_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              if(bTag){
                 h_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+             } else {
+                h_trueb_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+             }
+         } else {
+             h_no_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+             if(bTag){
+                h_no_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
+             } else {
+                h_no_trueb_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              }
          }
 
          
          //if (it->pt() > 100 && bTag) cout << "Btag: " << bTag << ", response (old):" << matchedJet->pt() / it->pt() << ",  response (new): " << res << endl;
 
-         if (bTag) {
+         //if (bTag) {
+         // Use templates based on whether it is a true b or not (not based on btags):
+         if (bTrue) {
             h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
             h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
             h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
@@ -260,9 +281,27 @@ void MCResolutions::beginJob() {
       sprintf(hname, "h_trueb_RecoPt_Eta%i", i_eta);
       h_trueb_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
       h_trueb_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_no_trueb_RecoPt_Eta%i", i_eta);
+      h_no_trueb_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_no_trueb_RecoPt.at(i_eta)->Sumw2();
       sprintf(hname, "h_trueb_btag_RecoPt_Eta%i", i_eta);
       h_trueb_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
       h_trueb_btag_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_trueb_no_btag_RecoPt_Eta%i", i_eta);
+      h_trueb_no_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_trueb_no_btag_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_no_trueb_no_btag_RecoPt_Eta%i", i_eta);
+      h_no_trueb_no_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_no_trueb_no_btag_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_trueb_no_btag_RecoPt_Eta%i", i_eta);
+      h_trueb_no_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_trueb_no_btag_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_btag_RecoPt_Eta%i", i_eta);
+      h_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_btag_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_no_btag_RecoPt_Eta%i", i_eta);
+      h_no_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_no_btag_RecoPt.at(i_eta)->Sumw2();
 
       for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
          //// Book histograms (all jet multiplicities)
@@ -311,7 +350,13 @@ void MCResolutions::endJob() {
    for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
       // btag efficiencies
       hfile->WriteTObject(h_trueb_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_no_trueb_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_no_trueb_btag_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_no_trueb_no_btag_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_trueb_no_btag_RecoPt.at(i_eta));
       hfile->WriteTObject(h_trueb_btag_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_btag_RecoPt.at(i_eta));
+      hfile->WriteTObject(h_no_btag_RecoPt.at(i_eta));
       for (unsigned int i_pt = 0; i_pt < PtBinEdges.size() - 1; ++i_pt) {
          // total
          hfile->WriteTObject(h_tot_JetAll_JetResPt_Pt.at(i_eta).at(i_pt));

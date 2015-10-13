@@ -506,13 +506,18 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          for (std::vector<pat::Jet>::const_iterator it = Jets_reb.begin(); it != Jets_reb.end(); ++it) {
             if (it->pt() > smearedJetPt_) {
                bool btag = (it->bDiscriminator(btagTag_) > btagCut_);
+
+               // Smearing
+               //double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btag);
+               btrue_probability = 1. // compute
+               btrue = random(btrue_probability)
                int i_flav = 0;
-               if (btag){
+               //if (btag){
+               if (btrue){
                   i_flav = 1;
                   //cout << "b-tagged" << endl;
                }
-               // Smearing
-               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btag);
+               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btrue);
                double newE = it->energy() * scale;
                double newMass = it->mass() * scale;
                double newEta = rand_->Gaus(it->eta(), JetResolution_Eta(it->pt(), it->eta(), i_jet, i_flav));
@@ -552,7 +557,8 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          //Fill HT and MHT prediction histos for i-th iteration of smearing
          int NJets = calcNJets(Jets_smeared);
          if (NJets >= NJetsSave_) {
-            FillPredictions(Jets_smeared, i, w*btag_correction);
+            //FillPredictions(Jets_smeared, i, w*btag_correction);
+            FillPredictions(Jets_smeared, i, w*btag_correction, dynamic_genJet2_btag);
 
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
                PredictionTree->Fill();
@@ -676,7 +682,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          //Fill HT and MHT prediction histos for i-th iteration of smearing
          int NJets = calcNJets_gen(GenJets_smeared);
          if (NJets >= NJetsSave_) {
-            FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
+            //FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
+            // for each iteration, use a newly computed map genjet <-> btag.
+            FillPredictions_gen(GenJets_smeared, i, w*btag_correction, dynamic_genJet2_btag);
 
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
                PredictionTree->Fill();
@@ -722,10 +730,11 @@ int QCDBkgRS::calcNJets(const std::vector<pat::Jet>& Jets_smeared) {
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
-int QCDBkgRS::calcNBJets(const std::vector<pat::Jet>& Jets_smeared) {
+int QCDBkgRS::calcNBJets(const std::vector<pat::Jet>& Jets_smeared, &btag_map) {
    int NBJets = 0;
    for (vector<pat::Jet>::const_iterator it = Jets_smeared.begin(); it != Jets_smeared.end(); ++it) {
-      if (it->pt() > JetsHTPt_ && std::abs(it->eta()) < JetsHTEta_ && it->bDiscriminator(btagTag_) > btagCut_) {
+      //if (it->pt() > JetsHTPt_ && std::abs(it->eta()) < JetsHTEta_ && it->bDiscriminator(btagTag_) > btagCut_) {
+      if (it->pt() > JetsHTPt_ && std::abs(it->eta()) < JetsHTEta_ && is_btagged_from_map {
          ++NBJets;
       }
    }

@@ -93,7 +93,13 @@ class MCResolutions: public edm::EDAnalyzer {
    //
    // Btag efficiencies
    std::vector<TH1F*> h_trueb_RecoPt;
+   std::vector<TH1F*> h_no_trueb_RecoPt;
    std::vector<TH1F*> h_trueb_btag_RecoPt;
+   std::vector<TH1F*> h_no_trueb_btag_RecoPt;
+   std::vector<TH1F*> h_no_trueb_no_btag_RecoPt;
+   std::vector<TH1F*> h_trueb_no_btag_RecoPt;
+   std::vector<TH1F*> h_btag_RecoPt;
+   std::vector<TH1F*> h_no_btag_RecoPt;
 
    std::vector<double> PtBinEdges;
    std::vector<double> EtaBinEdges;

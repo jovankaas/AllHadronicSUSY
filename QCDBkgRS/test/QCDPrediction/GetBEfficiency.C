@@ -36,11 +36,15 @@ void GetBEfficiency()
 
    TString outfile = "BTagEfficiency/BTagEfficiencies_Spring15MadGraph";
 
+   // The number of true b's as a function of pt and eta
    std::vector<TH1F*> BTrue_vs_RecoPt_Eta;
+   // The number of true b-tagged b's as a function of reco pt and eta
    std::vector<TH1F*> BTrue_BTag_vs_RecoPt_Eta;
+   // The number of true b's that are b-tagged at reco level as a
+   // function of reco pt and eta
    std::vector<TH1F*> BTagEfficiency_vs_RecoPt_Eta;
 
-   // 12 = # Eta bins
+   // 12 = the number Eta bins -- Change if this changes!
    BTrue_vs_RecoPt_Eta.resize(12);
    BTrue_BTag_vs_RecoPt_Eta.resize(12);
    BTagEfficiency_vs_RecoPt_Eta.resize(12);
@@ -80,7 +84,7 @@ void GetBEfficiency()
 
          for(int e_eta=0; e_eta<12; ++e_eta){
             char hname[100];
-            // Book histograms b-tag efficiencies
+            // Book histograms with numbers of b-tagged events
             sprintf(hname, "h_trueb_RecoPt_Eta%i;1", e_eta);
             gDirectory->GetObject(hname, BTrue_vs_RecoPt_temp);
             BTrue_vs_RecoPt_Eta.at(e_eta)->Add(BTrue_vs_RecoPt_temp);
@@ -107,6 +111,7 @@ void GetBEfficiency()
    for(int e_eta=0; e_eta<12; ++e_eta){
         BTagEfficiency_vs_RecoPt_Eta.at(e_eta) = new TH1F(*BTrue_BTag_vs_RecoPt_Eta.at(e_eta));
         cout << "Created BTagEfficiency Vector" << e_eta << endl;
+        // Divide # btags at reco level by # true b's at generator level:
         BTagEfficiency_vs_RecoPt_Eta.at(e_eta)->Divide(BTrue_vs_RecoPt_Eta.at(e_eta));
         cout << "Divided BTagEfficiency Vector" << e_eta << endl;
         // Can you rename the histogram BTagEfficiency?
