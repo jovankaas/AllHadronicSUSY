@@ -24,6 +24,9 @@
 #include <TCanvas.h>
 #include <TStyle.h>
 #include <TPostScript.h>
+#include <stdio.h>      /* printf, scanf, puts, NULL */
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 
 //--------------------------------------------------------------------------
@@ -318,6 +321,102 @@ double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
     return btageff;
 
 }
+//--------------------------------------------------------------------------
+// Get BMisTag Efficiencies:
+//--------------------------------------------------------------------------
+double QCDBkgRS::GetBMisTagEfficiency(double pt, double eta)
+{
+    //cout << "Called GetBmistagEfficiency..." << endl;
+    // Set to unrealistic value:
+    double bmistageff = 1.;
+    int eta_bin = GetIndex(eta, &EtaBinEdges_);
+    h_BMisTagEfficiencyFactor = BMisTagEfficiencyFactors[eta_bin];
+    //bmistageff = h_BMisTagEfficiencyFactor->GetBinContent(h_BMisTagEfficiencyFactor->GetXaxis()->FindBin(pt));
+    bmistageff = ReadXYHist(h_BMisTagEfficiencyFactor, pt);
+    //cout << "Found efficiency ratio " << bmistageff << " for pt " << pt << " and eta " << eta << endl;
+
+    return bmistageff;
+}
+
+//
+//--------------------------------------------------------------------------
+// Get NBTag:
+//--------------------------------------------------------------------------
+double QCDBkgRS::GetNBTag(double pt, double eta)
+{
+    //cout << "Called GetBTagEfficiency..." << endl;
+    // Set to unrealistic value:
+    double nbtag = 0.;
+    int eta_bin = GetIndex(eta, &EtaBinEdges_);
+    h_NBTag = NBTags[eta_bin];
+    //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
+    nbtag = ReadXYHist(h_NBTag, pt);
+    cout << "Found NBTag ratio " << nbtag << " for pt " << pt << " and eta " << eta << endl;
+
+
+    return nbtag;
+
+}
+
+//
+//--------------------------------------------------------------------------
+// Get NnoBTag:
+//--------------------------------------------------------------------------
+double QCDBkgRS::GetNnoBTag(double pt, double eta)
+{
+    //cout << "Called GetBTagEfficiency..." << endl;
+    // Set to unrealistic value:
+    double n_no_btag = 0.;
+    int eta_bin = GetIndex(eta, &EtaBinEdges_);
+    h_NnoBTag = NnoBTags[eta_bin];
+    //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
+    n_no_btag = ReadXYHist(h_NnoBTag, pt);
+    cout << "Found NnoBTag ratio " << n_no_btag << " for pt " << pt << " and eta " << eta << endl;
+
+
+    return n_no_btag;
+
+}
+
+//
+//--------------------------------------------------------------------------
+// Get NBTrue:
+//--------------------------------------------------------------------------
+double QCDBkgRS::GetNBTrue(double pt, double eta)
+{
+    //cout << "Called GetBTagEfficiency..." << endl;
+    // Set to unrealistic value:
+    double nbtrue = 0.;
+    int eta_bin = GetIndex(eta, &EtaBinEdges_);
+    h_NBTrue = NBTrues[eta_bin];
+    //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
+    nbtrue = ReadXYHist(h_NBTrue, pt);
+    cout << "Found NBTrue ratio " << nbtrue << " for pt " << pt << " and eta " << eta << endl;
+
+
+    return nbtrue;
+
+}
+//--------------------------------------------------------------------------
+// Random number between 0 and 1:
+//--------------------------------------------------------------------------
+double QCDBkgRS::RandomNumber()
+{
+  int iNum;
+  double randomNumber;
+
+  /* initialize random seed: */
+  srand (time(NULL));
+
+  /* generate secret number between 0 and 32767 (largest guaranteed RAND_MAX): */
+  iNum = rand() % 32767;
+
+  /* make it a number between 0 and 1 */
+  randomNumber = iNum / 32767.0;
+
+  return randomNumber;
+}
+
 
 //--------------------------------------------------------------------------
 // rebalance the events using a kinematic fit and transverse momentum balance
@@ -509,34 +608,54 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
 
                // Smearing
                //double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btag);
-               btrue_probability = 1. // compute
-               btrue = random(btrue_probability)
+
+               // Compute the probability that a jet was a true b-jet:
+               double BTagEff = GetBTagEfficiency(it->pt(), it->eta());
+               double NBTrue = GetNBTrue(it->pt(), it->eta());
+               if(btag){
+
+                   double NBTag = GetNBTag(it->pt(), it->eta());
+                   double p_btrue =  BTagEff * NBTrue/NBTag;
+               } else {
+                   double NnoBTag = GetNnoBTag(it->pt(), it->eta());
+                   double p_btrue = (1 - BTagEff) * NBTrue/NnoBTag;
+               }
+               // Pick a random number between 0 and 1:
+               random_number = RandomNumber();
+               // The particle is a true b with probability p_btrue;
+               // decide with the random number:
+               bool btrue = p_btrue > random_number;
                int i_flav = 0;
                //if (btag){
                if (btrue){
                   i_flav = 1;
-                  //cout << "b-tagged" << endl;
                }
-               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, btrue);
+               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, i_flav);
                double newE = it->energy() * scale;
                double newMass = it->mass() * scale;
                double newEta = rand_->Gaus(it->eta(), JetResolution_Eta(it->pt(), it->eta(), i_jet, i_flav));
                double newPhi = rand_->Gaus(it->phi(), JetResolution_Phi(it->pt(), it->eta(), i_jet, i_flav));
                double newPt = sqrt(newE*newE-newMass*newMass)/cosh(newEta);
+
+               
+
+               // No smearing:
                //double newEta = it->eta();
                //double newPhi = it->phi();
-               //Btag corrections
-               if(btag){
-                    double newBTagEff = GetBTagEfficiency(newPt, newEta);
-                    double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
+               //
+
+               //Btag correction factors
+               //if(btag){
+               //     double newBTagEff = GetBTagEfficiency(newPt, newEta);
+               //     double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
 
                     // BTag efficiency should be less than 1!
                     // If btag efficiency is 1, this is because
                     // it could not be read from the file. Ignore
                     // and keep correction factor 1:
-                    if (newBTagEff < 1.0 && oldBTagEff < 1.0){
-                        btag_correction *= newBTagEff/oldBTagEff;
-                    }
+                //    if (newBTagEff < 1.0 && oldBTagEff < 1.0){
+                //        btag_correction *= newBTagEff/oldBTagEff;
+                //    }
                }
 
                pat::Jet::PolarLorentzVector newP4(newPt, newEta, newPhi, it->mass());

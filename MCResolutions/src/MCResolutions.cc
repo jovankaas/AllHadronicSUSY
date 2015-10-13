@@ -18,6 +18,9 @@
 //
 
 #include "AllHadronicSUSY/MCResolutions/interface/MCResolutions.h"
+#include <iostream>
+
+using namespace std;
 
 //
 // constructors and destructor
@@ -218,6 +221,8 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          h_tot_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
          h_tot_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
          h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
+      
+         cout << "Determine btag/btrue information" << endl;
          
          //// Use algorithmic matching for heavy flavour ID
          bool bTrue = false;
@@ -228,25 +233,34 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
          //// Use b-tag for heavy flavour ID
          bool bTag = false;
+         cout << "Store btag/btrue information" << endl;
          if ( matchedJet->bDiscriminator(_btagTag) > _btagCut) {
             bTag = true;
+            cout << "btag" << endl;
             h_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
          } else {
+            cout << "no btag" << endl;
             h_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
          }
 
          if(bTrue){
+             cout << "true b" << endl;
              h_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              if(bTag){
+                cout << "true b and btag" << endl;
                 h_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              } else {
+                cout << "true b and no btag" << endl;
                 h_trueb_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              }
          } else {
+             cout << "no true b" << endl;
              h_no_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              if(bTag){
+                cout << "no true b and btag" << endl;
                 h_no_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              } else {
+                cout << "no true b and no btag" << endl;
                 h_no_trueb_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              }
          }
@@ -277,6 +291,7 @@ void MCResolutions::beginJob() {
    
    for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
       char hname[100];
+      cout << "Book histograms" << endl;
       // Book histograms b-tag efficiencies
       sprintf(hname, "h_trueb_RecoPt_Eta%i", i_eta);
       h_trueb_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
@@ -293,9 +308,9 @@ void MCResolutions::beginJob() {
       sprintf(hname, "h_no_trueb_no_btag_RecoPt_Eta%i", i_eta);
       h_no_trueb_no_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
       h_no_trueb_no_btag_RecoPt.at(i_eta)->Sumw2();
-      sprintf(hname, "h_trueb_no_btag_RecoPt_Eta%i", i_eta);
-      h_trueb_no_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
-      h_trueb_no_btag_RecoPt.at(i_eta)->Sumw2();
+      sprintf(hname, "h_no_trueb_btag_RecoPt_Eta%i", i_eta);
+      h_no_trueb_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
+      h_no_trueb_btag_RecoPt.at(i_eta)->Sumw2();
       sprintf(hname, "h_btag_RecoPt_Eta%i", i_eta);
       h_btag_RecoPt.at(i_eta) = new TH1F(hname, hname, 200, 0., 1000.);
       h_btag_RecoPt.at(i_eta)->Sumw2();
@@ -349,6 +364,7 @@ void MCResolutions::endJob() {
    // Save all objects in this file
    for (unsigned int i_eta = 0; i_eta < EtaBinEdges.size() - 1; ++i_eta) {
       // btag efficiencies
+      cout << "Write histograms" << endl;
       hfile->WriteTObject(h_trueb_RecoPt.at(i_eta));
       hfile->WriteTObject(h_no_trueb_RecoPt.at(i_eta));
       hfile->WriteTObject(h_no_trueb_btag_RecoPt.at(i_eta));
