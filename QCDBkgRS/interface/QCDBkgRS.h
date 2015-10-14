@@ -193,7 +193,7 @@ private:
    double JetResolution_Phi(const double&, const double&, const int&, const int&);
    double JetResolutionHist_Pt_Smear(const double&, const double&, const int&,const double&, const int&, const bool);
    int GetIndex(const double&, const std::vector<double>*);
-   void FillPredictions(const std::vector<pat::Jet>&, const int&, const double&);
+   void FillPredictions(const std::vector<pat::Jet>&, const int&, const double&, std::map <const reco::Jet*, bool>& );
    void FillPredictions_gen(const std::vector<reco::GenJet>&, const int&, const double&, std::map <const reco::GenJet*, bool>& );
    double calcHT(const std::vector<pat::Jet>&);
    double calcHT_gen(const std::vector<reco::GenJet>&);
@@ -201,7 +201,7 @@ private:
    math::PtEtaPhiMLorentzVector calcMHT_gen(const std::vector<reco::GenJet>&, double);
    int calcNJets(const std::vector<pat::Jet>&);
    int calcNJets_gen(const std::vector<reco::GenJet>&);
-   int calcNBJets(const std::vector<pat::Jet>&);
+   int calcNBJets(const std::vector<pat::Jet>&, std::map <const reco::Jet*, bool>& );
    int calcNBJets_gen(const std::vector<reco::GenJet>&, std::map <const reco::GenJet*, bool>&);
    bool calcMinDeltaPhi(const std::vector<pat::Jet>&, math::PtEtaPhiMLorentzVector&);
    bool calcMinDeltaPhi_gen(const std::vector<reco::GenJet>&, math::PtEtaPhiMLorentzVector&);
@@ -211,6 +211,11 @@ private:
    void FillDeltaPhiPredictions_gen(const std::vector<reco::GenJet>&, math::PtEtaPhiMLorentzVector&); 
    double GetRebalanceCorrection(double jet_pt, bool btag);
    double GetBTagEfficiency(double pt, double eta);
+   double GetBMisTagEfficiency(double pt, double eta);
+   double GetNnoBTag(double pt, double eta);
+   double GetNBTag(double pt, double eta);
+   double GetNBTrue(double pt, double eta);
+   double RandomNumber();
    double ReadXYHist(TH1F* hist, double x);
 
    
@@ -240,7 +245,15 @@ private:
    // Reweighting of BTagged events with pT dependent
    // btag efficiency ratios (newpt btag/oldpt btag):
    TH1F* h_BTagEfficiencyFactor;
+   TH1F* h_BMisTagEfficiencyFactor;
+   TH1F* h_NBTag;
+   TH1F* h_NBTrue;
+   TH1F* h_NnoBTag;
    std::vector<TH1F*> BTagEfficiencyFactors;
+   std::vector<TH1F*> BMisTagEfficiencyFactors;
+   std::vector<TH1F*> NBTrues;
+   std::vector<TH1F*> NBTags;
+   std::vector<TH1F*> NnoBTags;
 
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;

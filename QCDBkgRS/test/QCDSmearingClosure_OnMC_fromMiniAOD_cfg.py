@@ -91,7 +91,7 @@ process.QCDfromSmearing.InputHistoEta_NoHF = 'h_nob_JetAll_ResponseEta'
 process.QCDfromSmearing.InputHistoPhi_NoHF = 'h_nob_JetAll_ResponsePhi'
 process.QCDfromSmearing.RebalanceCorrectionFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withBTagCorrections_pt10.root'
 #'/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
-process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/BTagEfficiencies_Spring15MadGraph.root'
+process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/B_Mis_TagEfficiencies_Spring15MadGraph.root'
 process.QCDfromSmearing.NRebin = 1
 process.QCDfromSmearing.SmearCollection = 'Reco'
 #process.QCDfromSmearing.SmearCollection = 'Gen'
