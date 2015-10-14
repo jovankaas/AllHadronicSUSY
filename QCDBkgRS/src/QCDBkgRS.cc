@@ -304,14 +304,14 @@ double QCDBkgRS::ReadXYHist(TH1F* hist, double x)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
 {
-    //cout << "Called GetBTagEfficiency..." << endl;
+    cout << "Called GetBTagEfficiency..." << endl;
     // Set to unrealistic value:
     double btageff = 1.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_BTagEfficiencyFactor = BTagEfficiencyFactors[eta_bin];
     //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     btageff = ReadXYHist(h_BTagEfficiencyFactor, pt);
-    //cout << "Found efficiency ratio " << btageff << " for pt " << pt << " and eta " << eta << endl;
+    cout << "Found efficiency " << btageff << " for pt " << pt << " and eta " << eta << endl;
 
     if( btageff == 0.0 ){
         // Reset to unrealistic value.
@@ -326,14 +326,13 @@ double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetBMisTagEfficiency(double pt, double eta)
 {
-    //cout << "Called GetBmistagEfficiency..." << endl;
-    // Set to unrealistic value:
+    cout << "Called GetBmistagEfficiency..." << endl;
     double bmistageff = 1.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_BMisTagEfficiencyFactor = BMisTagEfficiencyFactors[eta_bin];
     //bmistageff = h_BMisTagEfficiencyFactor->GetBinContent(h_BMisTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     bmistageff = ReadXYHist(h_BMisTagEfficiencyFactor, pt);
-    //cout << "Found efficiency ratio " << bmistageff << " for pt " << pt << " and eta " << eta << endl;
+    cout << "Found mistag efficiency " << bmistageff << " for pt " << pt << " and eta " << eta << endl;
 
     return bmistageff;
 }
@@ -344,8 +343,7 @@ double QCDBkgRS::GetBMisTagEfficiency(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetNBTag(double pt, double eta)
 {
-    //cout << "Called GetBTagEfficiency..." << endl;
-    // Set to unrealistic value:
+    cout << "Called GetNBTag..." << endl;
     double nbtag = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_NBTag = NBTags[eta_bin];
@@ -364,8 +362,7 @@ double QCDBkgRS::GetNBTag(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetNnoBTag(double pt, double eta)
 {
-    //cout << "Called GetBTagEfficiency..." << endl;
-    // Set to unrealistic value:
+    cout << "Called GetNnoBTag..." << endl;
     double n_no_btag = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_NnoBTag = NnoBTags[eta_bin];
@@ -384,8 +381,7 @@ double QCDBkgRS::GetNnoBTag(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetNBTrue(double pt, double eta)
 {
-    //cout << "Called GetBTagEfficiency..." << endl;
-    // Set to unrealistic value:
+    cout << "Called GetNBTrue..." << endl;
     double nbtrue = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_NBTrue = NBTrues[eta_bin];
@@ -402,6 +398,7 @@ double QCDBkgRS::GetNBTrue(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::RandomNumber()
 {
+  cout << "Called random number function..." << endl;
   int iNum;
   double randomNumber;
 
@@ -625,15 +622,19 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                //-------------------------------------------------------
                double BTagEff = GetBTagEfficiency(it->pt(), it->eta());
                double NBTrue = GetNBTrue(it->pt(), it->eta());
+               double NBTag = GetNBTag(it->pt(), it->eta());
+               double NnoBTag = GetNnoBTag(it->pt(), it->eta());
+               cout << "Found BTagEff " << BTagEff << endl;
+               cout << "Found NBTrue " << NBTrue << endl;
+               cout << "Found NBTag " << NBTag << endl;
+               cout << "Found NnoBTag " << NnoBTag << endl;
                if(btag){
 
-                   double NBTag = GetNBTag(it->pt(), it->eta());
                    p_btrue =  BTagEff * NBTrue/NBTag;
                } else {
-                   double NnoBTag = GetNnoBTag(it->pt(), it->eta());
                    p_btrue = (1 - BTagEff) * NBTrue/NnoBTag;
                }
-               cout << "PBTrue: " << p_btag << endl;
+               cout << "PBTrue: " << p_btrue << endl;
                // Pick a random number between 0 and 1:
                double random_number = RandomNumber();
                // The particle is a true b with probability p_btrue;
@@ -677,7 +678,8 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                double newBMisTagEff = GetBMisTagEfficiency(newPt, newEta);
                // Btag correction factors
                // This is deprecated
-               double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
+               double oldBTagEff = BTagEff;
+               cout << "NewBtageff: "<< newBTagEff << "old btageff: " << oldBTagEff << " correction: " << newBTagEff/oldBTagEff << endl;
                if(btag){
 
                     // BTag efficiency should be less than 1!
@@ -685,7 +687,9 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                     // it could not be read from the file. Ignore
                     // and keep correction factor 1:
                     if (newBTagEff < 1.0 && oldBTagEff < 1.0){
+                        cout << "NewBtageff: "<< newBTagEff << "old btageff: " << oldBTagEff << " correction: " << btag_correction << endl;
                         btag_correction *= newBTagEff/oldBTagEff;
+
                     }
                }
                cout << "Btag correction factor:" << btag_correction << endl;
@@ -693,7 +697,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                // Compute probability that the particle is b-tagged.
                // Ignore the given b-tag information here:
                p_btag = p_btrue * newBTagEff + (1 - p_btrue) * newBMisTagEff;
-               cout << "PBtag: " << p_btag << endl;
+               cout << "p(BTag): " << p_btag << endl;
                double random_btag = RandomNumber();
                bool btagged = p_btag > random_btag;
                if(btagged) {
@@ -702,6 +706,9 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                dynamic_jet_btag_map[&(Jets_smeared.back())] = btagged;
                //-------------------------------------------------------
 
+               h_pBTrue_smear->Fill(p_btrue);
+               h_pBTag_smear->Fill(p_btag);
+               h_BTagCorrectionFactor_smear->Fill(btag_correction);
                ++i_jet;
             } else {
                pat::Jet smearedJet(*it);
@@ -826,7 +833,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                    double NnoBTag = GetNnoBTag(it->pt(), it->eta());
                    p_btrue = (1 - BTagEff) * NBTrue/NnoBTag;
                }
-               cout << "PBTrue (gen): " << p_btag << endl;
+               cout << "PBTrue (gen): " << p_btrue << endl;
                // Pick a random number between 0 and 1:
                double random_number = RandomNumber();
                // The particle is a true b with probability p_btrue;
@@ -895,6 +902,10 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                }
                dynamic_genjet_btag_map[&(GenJets_smeared.back())] = btagged;
                //-------------------------------------------------------
+
+               h_pBTrue_smear->Fill(p_btrue);
+               h_pBTag_smear->Fill(p_btag);
+               h_BTagCorrectionFactor_smear->Fill(btag_correction);
 
                ++i_jet;
             } else {
@@ -2115,6 +2126,14 @@ void QCDBkgRS::beginJob()
       h_nJets_smear = fs->make<TH1F> ("NJets_smear", "NJets", 15, 0., 15);
       h_nJets_smear->Sumw2();
 
+      // Control plots for btag corrections
+      h_pBTrue_smear = fs->make<TH1F> ("pBTrue_smear", "pBTrue", 1000, 0., 100.);
+      h_pBTrue_smear->Sumw2();
+      h_pBTag_smear = fs->make<TH1F> ("pBTag_smear", "pBTag", 1000, 0., 100.);
+      h_pBTag_smear->Sumw2();
+      h_BTagCorrectionFactor_smear = fs->make<TH1F> ("BTagCorrectionFactor_smear", "BTagCorr", 1000, 0., 10.);
+      h_BTagCorrectionFactor_smear->Sumw2();
+
       h_JetPt_gen = fs->make<TH1F> ("JetPt_gen", "Jet pt", 1000, 0., 1000.);
       h_JetPt_gen->Sumw2();
       h_JetPt_reco = fs->make<TH1F> ("JetPt_reco", "Jet pt", 1000, 0., 1000.);
@@ -2310,7 +2329,7 @@ void QCDBkgRS::beginJob()
 
             // get nbtrue efficiency correction histo
             cout << "Reading NBTrue from file..." << endl;
-            sprintf(hname, "NBTrue_vs_RecoPt_Eta%i;1", e_eta);
+            sprintf(hname, "BTrue_vs_RecoPt_Eta%i;1", e_eta);
             if(f_btags->FindObjectAny(hname)){
                 NBTrues.push_back((TH1F*) f_btags->FindObjectAny(hname));
             }
@@ -2337,6 +2356,7 @@ void QCDBkgRS::beginJob()
    PredictionTree = fs->make<TTree> ("QCDPrediction", "QCDPrediction", 0);
    PredictionTree->SetAutoSave(10000000000);
    PredictionTree->SetAutoFlush(1000000);
+   cout << "Defined output tree." << endl;
 
    // set branches for output tree
    PredictionTree->Branch("NVtx", &vtxN);
@@ -2359,6 +2379,7 @@ void QCDBkgRS::beginJob()
    PredictionTree->Branch("DeltaPhi2", &DeltaPhi2_pred);
    PredictionTree->Branch("DeltaPhi3", &DeltaPhi3_pred);
    PredictionTree->Branch("minDeltaPhiN", &DeltaPhiMinN_pred);
+   cout << "Set branches for output tree." << endl;
 
 }
 //--------------------------------------------------------------------------

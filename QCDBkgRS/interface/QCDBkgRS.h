@@ -254,6 +254,10 @@ private:
    std::vector<TH1F*> NBTrues;
    std::vector<TH1F*> NBTags;
    std::vector<TH1F*> NnoBTags;
+   // Keep track of numbers used:
+   TH1F* h_pBTrue_smear;
+   TH1F* h_pBTag_smear;
+   TH1F* h_BTagCorrectionFactor_smear;
 
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;
