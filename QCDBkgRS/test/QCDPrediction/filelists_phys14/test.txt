@@ -1,1 +1,1 @@
-/afs/desy.de/user/s/sonnevej/allhad/MCResolutions/test/test_MC.root
+/afs/desy.de/user/s/sonnevej/allhad/QCDBkgRS/test/QCDSmearingClosure_OnMC.root

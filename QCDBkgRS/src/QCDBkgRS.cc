@@ -24,9 +24,9 @@
 #include <TCanvas.h>
 #include <TStyle.h>
 #include <TPostScript.h>
-#include <stdio.h>      /* printf, scanf, puts, NULL */
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+//#include <stdio.h>      /* printf, scanf, puts, NULL */
+//#include <stdlib.h>     /* srand, rand */
+//#include <time.h>       /* time */
 
 
 //--------------------------------------------------------------------------
@@ -126,11 +126,10 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    rand_ = new TRandom3(0);
 
    // get object of class SmearFunction
-
-   cout << "Get smearfunction" << iConfig.getParameter<std::string> ("SmearingFile").c_str() << endl;
+   //cout << "Get smearfunction" << iConfig.getParameter<std::string> ("SmearingFile").c_str() << endl;
    smearFunc_ = new SmearFunction(iConfig);
 
-   cout << "Set seeds, got smearfunction" << endl;
+   //cout << "Set seeds, got smearfunction" << endl;
 }
 //--------------------------------------------------------------------------
 
@@ -304,18 +303,18 @@ double QCDBkgRS::ReadXYHist(TH1F* hist, double x)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
 {
-    cout << "Called GetBTagEfficiency..." << endl;
+    //cout << "Called GetBTagEfficiency..." << endl;
     // Set to unrealistic value:
-    double btageff = 1.;
+    double btageff = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_BTagEfficiencyFactor = BTagEfficiencyFactors[eta_bin];
     //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     btageff = ReadXYHist(h_BTagEfficiencyFactor, pt);
-    cout << "Found efficiency " << btageff << " for pt " << pt << " and eta " << eta << endl;
+    //cout << "Found efficiency " << btageff << " for pt " << pt << " and eta " << eta << endl;
 
     if( btageff == 0.0 ){
         // Reset to unrealistic value.
-        btageff = 1.;
+        btageff = 0.;
     }
 
     return btageff;
@@ -326,13 +325,13 @@ double QCDBkgRS::GetBTagEfficiency(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetBMisTagEfficiency(double pt, double eta)
 {
-    cout << "Called GetBmistagEfficiency..." << endl;
+    //cout << "Called GetBmistagEfficiency..." << endl;
     double bmistageff = 1.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_BMisTagEfficiencyFactor = BMisTagEfficiencyFactors[eta_bin];
     //bmistageff = h_BMisTagEfficiencyFactor->GetBinContent(h_BMisTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     bmistageff = ReadXYHist(h_BMisTagEfficiencyFactor, pt);
-    cout << "Found mistag efficiency " << bmistageff << " for pt " << pt << " and eta " << eta << endl;
+    //cout << "Found mistag efficiency " << bmistageff << " for pt " << pt << " and eta " << eta << endl;
 
     return bmistageff;
 }
@@ -343,13 +342,13 @@ double QCDBkgRS::GetBMisTagEfficiency(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetNBTag(double pt, double eta)
 {
-    cout << "Called GetNBTag..." << endl;
+    //cout << "Called GetNBTag..." << endl;
     double nbtag = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_NBTag = NBTags[eta_bin];
     //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     nbtag = ReadXYHist(h_NBTag, pt);
-    cout << "Found NBTag " << nbtag << " for pt " << pt << " and eta " << eta << endl;
+    //cout << "Found NBTag " << nbtag << " for pt " << pt << " and eta " << eta << endl;
 
 
     return nbtag;
@@ -362,13 +361,13 @@ double QCDBkgRS::GetNBTag(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetNnoBTag(double pt, double eta)
 {
-    cout << "Called GetNnoBTag..." << endl;
+    //cout << "Called GetNnoBTag..." << endl;
     double n_no_btag = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_NnoBTag = NnoBTags[eta_bin];
     //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     n_no_btag = ReadXYHist(h_NnoBTag, pt);
-    cout << "Found NnoBTag " << n_no_btag << " for pt " << pt << " and eta " << eta << endl;
+    //cout << "Found NnoBTag " << n_no_btag << " for pt " << pt << " and eta " << eta << endl;
 
 
     return n_no_btag;
@@ -381,44 +380,25 @@ double QCDBkgRS::GetNnoBTag(double pt, double eta)
 //--------------------------------------------------------------------------
 double QCDBkgRS::GetNBTrue(double pt, double eta)
 {
-    cout << "Called GetNBTrue..." << endl;
+    //cout << "Called GetNBTrue..." << endl;
     double nbtrue = 0.;
     int eta_bin = GetIndex(eta, &EtaBinEdges_);
     h_NBTrue = NBTrues[eta_bin];
     //btageff = h_BTagEfficiencyFactor->GetBinContent(h_BTagEfficiencyFactor->GetXaxis()->FindBin(pt));
     nbtrue = ReadXYHist(h_NBTrue, pt);
-    cout << "Found NBTrue ratio " << nbtrue << " for pt " << pt << " and eta " << eta << endl;
+    //cout << "Found NBTrue ratio " << nbtrue << " for pt " << pt << " and eta " << eta << endl;
 
 
     return nbtrue;
 
 }
-//--------------------------------------------------------------------------
-// Random number between 0 and 1:
-//--------------------------------------------------------------------------
-double QCDBkgRS::RandomNumber()
-{
-  cout << "Called random number function..." << endl;
-  int iNum;
-  double randomNumber;
 
-  /* initialize random seed: */
-  srand (time(NULL));
-
-  /* generate secret number between 0 and 32767 (largest guaranteed RAND_MAX): */
-  iNum = rand() % 32767;
-
-  /* make it a number between 0 and 1 */
-  randomNumber = iNum / 32767.0;
-
-  return randomNumber;
-}
 
 
 //--------------------------------------------------------------------------
 // rebalance the events using a kinematic fit and transverse momentum balance
 bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vector<pat::Jet> &Jets_reb) {
-   cout << "Will rebalance jets" << endl;
+   //cout << "Will rebalance jets" << endl;
    bool result = true;
 
    //// Interface to KinFitter
@@ -582,12 +562,18 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
 //--------------------------------------------------------------------------
 void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<pat::Jet> &Jets_smeared) {
 
-   cout << "will start smearing rebalanced jets" << endl;
+   //cout << "will start smearing rebalanced jets" << endl;
    double dPx = 0;
    double dPy = 0;
    double HT = calcHT(Jets_reb);
    int NJets_reb = calcNJets(Jets_reb);
 
+   TRandom3 *r;
+   // Make new map where we will store our own decision of
+   // whether a jet is b-tagged (rather than take the given
+   // b-tag information) which will then later only be used
+   // to count the number of b-jets in an event:
+   std::map <const reco::Jet*, bool> dynamic_jet_btag_map;
    for (int i = 1; i <= Ntries_; ++i) {
       int Ntries2 = 1;
       double w = weight_;
@@ -596,18 +582,16 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          if (Ntries2 > 100) Ntries2 = 100;
          w = weight_ / Ntries2;
       }
-
       for (int j = 1; j <= Ntries2; ++j) {
          double btag_correction = 1.;
-         double p_btrue = 1.;
-         double p_btag = 1.;
+         double p_btrue = 0.;
+         double p_btag = 0.;
          Jets_smeared.clear();
          int i_jet = 0;
-         // Make new map where we will store our own decision of
-         // whether a jet is b-tagged (rather than take the given
-         // b-tag information) which will then later only be used
-         // to count the number of b-jets in an event:
-         std::map <const reco::Jet*, bool> dynamic_jet_btag_map;
+
+         // Clear map:
+         dynamic_jet_btag_map.clear();
+
          // Iterate over jets:
          for (std::vector<pat::Jet>::const_iterator it = Jets_reb.begin(); it != Jets_reb.end(); ++it) {
 
@@ -624,19 +608,22 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                double NBTrue = GetNBTrue(it->pt(), it->eta());
                double NBTag = GetNBTag(it->pt(), it->eta());
                double NnoBTag = GetNnoBTag(it->pt(), it->eta());
-               cout << "Found BTagEff " << BTagEff << endl;
-               cout << "Found NBTrue " << NBTrue << endl;
-               cout << "Found NBTag " << NBTag << endl;
-               cout << "Found NnoBTag " << NnoBTag << endl;
+               //cout << "Found BTagEff " << BTagEff << endl;
+               //cout << "Found NBTrue " << NBTrue << endl;
+               //cout << "Found NBTag " << NBTag << endl;
+               //cout << "Found NnoBTag " << NnoBTag << endl;
                if(btag){
-
                    p_btrue =  BTagEff * NBTrue/NBTag;
                } else {
                    p_btrue = (1 - BTagEff) * NBTrue/NnoBTag;
                }
-               cout << "PBTrue: " << p_btrue << endl;
+               //cout << "P(BTrue): " << p_btrue << endl;
                // Pick a random number between 0 and 1:
-               double random_number = RandomNumber();
+
+               r = new TRandom3(0); // generate a number in interval ]0,1] (0 is excluded)
+               double random_number = r->Rndm();
+               delete r;
+
                // The particle is a true b with probability p_btrue;
                // decide with the random number:
                bool btrue = p_btrue > random_number;
@@ -646,8 +633,21 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                // particle was a true b (not based on its b-tag):
                if (btrue){
                   i_flav = 1;
-                  cout << "There was a true b jet" << endl;
+                  //cout << "There was a true b jet" << endl;
                }
+
+               //if(p_btrue > 1){
+               //    cout << " " << endl;
+               //    cout << "Found p(BTrue) > 1!" << " For btag=" << btag << endl;
+               //    cout << "p(BTrue): " << p_btrue << endl;
+               //    cout << "eff(BTag): " << BTagEff << endl;
+               //    cout << "N(BTrue): " << NBTrue << endl;
+               //    cout << "N(BTag): " << NBTag << endl;
+               //    cout << "N(noBTag): " << NnoBTag << endl;
+               //    cout << "Random number: " << random_number << endl;
+               //    cout << "Considered a true b:" << btrue << endl;
+               //    cout << " " << endl;
+               //}
                //-------------------------------------------------------
 
                double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_reb, i_flav);
@@ -676,38 +676,61 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                //-------------------------------------------------------
                double newBTagEff = GetBTagEfficiency(newPt, newEta);
                double newBMisTagEff = GetBMisTagEfficiency(newPt, newEta);
+               //cout << "Found NewBTagEff " << newBTagEff << endl;
+               //cout << "Found NewBMisTagEff " << newBMisTagEff << endl;
                // Btag correction factors
                // This is deprecated
                double oldBTagEff = BTagEff;
-               cout << "NewBtageff: "<< newBTagEff << "old btageff: " << oldBTagEff << " correction: " << newBTagEff/oldBTagEff << endl;
-               if(btag){
+               //cout << "NewBtageff: "<< newBTagEff << " old btageff: " << oldBTagEff << " correction: " << newBTagEff/oldBTagEff << endl;
+               // Take care not to divide by zero:
+               if(btag && (oldBTagEff > 0)){
 
                     // BTag efficiency should be less than 1!
                     // If btag efficiency is 1, this is because
                     // it could not be read from the file. Ignore
                     // and keep correction factor 1:
                     if (newBTagEff < 1.0 && oldBTagEff < 1.0){
-                        cout << "NewBtageff: "<< newBTagEff << "old btageff: " << oldBTagEff << " correction: " << btag_correction << endl;
+                        //cout << "NewBtageff: "<< newBTagEff << "old btageff: " << oldBTagEff << " correction: " << btag_correction << endl;
                         btag_correction *= newBTagEff/oldBTagEff;
 
                     }
                }
-               cout << "Btag correction factor:" << btag_correction << endl;
+               //cout << "Btag correction factor:" << btag_correction << endl;
 
                // Compute probability that the particle is b-tagged.
                // Ignore the given b-tag information here:
                p_btag = p_btrue * newBTagEff + (1 - p_btrue) * newBMisTagEff;
-               cout << "p(BTag): " << p_btag << endl;
-               double random_btag = RandomNumber();
+               //cout << "p(BTag): " << p_btag << endl;
+               r = new TRandom3(0); // generate a number in interval ]0,1] (0 is excluded)
+               double random_btag = r->Rndm();
+               delete r;
                bool btagged = p_btag > random_btag;
                if(btagged) {
-                   cout << "There was a b-tagged jet" << endl;
+                   //cout << "There was a b-tagged jet" << endl;
                }
+
+               //if(p_btag > 1){
+               //    cout << " " << endl;
+               //    cout << "Found p(BTag) > 1!" << endl;
+               //    cout << "p(BTag): " << p_btag << endl;
+               //    cout << "p(BTrue): " << p_btrue << endl;
+               //    cout << "eff(BTag,new): " << newBTagEff << endl;
+               //    cout << "eff(BMisTag,new): " << newBMisTagEff << endl;
+               //    cout << "Random number: " << random_btag << endl;
+               //    cout << "Considered b-tagged:" << btagged << endl;
+               //    cout << " " << endl;
+               //}
+
+               // Add btag to map.
+               // This is the information used to determine the number
+               // of b's in an event.
                dynamic_jet_btag_map[&(Jets_smeared.back())] = btagged;
                //-------------------------------------------------------
 
                h_pBTrue_smear->Fill(p_btrue);
                h_pBTag_smear->Fill(p_btag);
+               h_random_BTrue_smear->Fill(random_number);
+               h_random_BTag_smear->Fill(random_btag);
                h_BTagCorrectionFactor_smear->Fill(btag_correction);
                ++i_jet;
             } else {
@@ -757,7 +780,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
 
 //--------------------------------------------------------------------------
 void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat::PackedGenParticle>* genParticles, std::vector<reco::GenJet> &GenJets_smeared) {
-   cout << "will start smearing generator level jets" << endl;
+   //cout << "will start smearing generator level jets" << endl;
 
    double dPx = 0;
    double dPy = 0;
@@ -772,6 +795,12 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
       }
    }
 
+   TRandom3 *r;
+      // Make new map where we will store our own decision of
+      // whether a jet is b-tagged (rather than take the given
+      // b-tag information) which will then later only be used
+      // to count the number of b-jets in an event:
+      std::map <const reco::GenJet*, bool> dynamic_genjet_btag_map;
    for (int i = 1; i <= Ntries_; ++i) {
       int Ntries2 = 1;
       double w = weight_;
@@ -780,6 +809,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          if (Ntries2 > 100) Ntries2 = 100;
          w = weight_ / Ntries2;
       }
+
       for (int j = 1; j <= Ntries2; ++j) {
 
          double btag_correction = 1.;
@@ -787,16 +817,26 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          double p_btag = 1.;
 
 
-         GenJets_smeared.clear();
-         std::map <const reco::GenJet*, bool> genJet2_btag;
 
          int i_jet = 0;
-         // Make new map where we will store our own decision of
-         // whether a jet is b-tagged (rather than take the given
-         // b-tag information) which will then later only be used
-         // to count the number of b-jets in an event:
-         std::map <const reco::GenJet*, bool> dynamic_genjet_btag_map;
          //
+         //cout << "Will now delete map contents" << endl;
+         //for(auto map_it = dynamic_genjet_btag_map.begin(); map_it != dynamic_genjet_btag_map.end(); map_it++){
+         //    if(map_it->first){
+         //        cout << "Deleting key" << endl;
+         //        delete map_it->first;
+         //    }
+         //    if(map_it->second){
+         //        cout << "Deleting value" << endl;
+         //        dynamic_genjet_btag_map.erase(map_it);
+         //    }
+         //}
+         //cout << "Deleted map contents" << endl;
+         //dynamic_genjet_btag_map.erase(dynamic_genjet_btag_map.begin(), dynamic_genjet_btag_map.end());
+         // Are  you deleting pointers here and leaking memory?
+         dynamic_genjet_btag_map.clear();
+         //std::map <const reco::GenJet*, bool> genJet2_btag;
+         GenJets_smeared.clear();
          // Iterate over jets:
 
          for (edm::View<reco::GenJet>::const_iterator it = Jets_gen->begin(); it != Jets_gen->end(); ++it) {
@@ -833,19 +873,21 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                    double NnoBTag = GetNnoBTag(it->pt(), it->eta());
                    p_btrue = (1 - BTagEff) * NBTrue/NnoBTag;
                }
-               cout << "PBTrue (gen): " << p_btrue << endl;
+               //cout << "P(BTrue) (gen): " << p_btrue << endl;
                // Pick a random number between 0 and 1:
-               double random_number = RandomNumber();
+               r = new TRandom3(0); // generate a number in interval ]0,1] (0 is excluded)
+               double random_number = r->Rndm();
                // The particle is a true b with probability p_btrue;
                // decide with the random number:
                bool btrue = p_btrue > random_number;
+               delete r;
                int i_flav = 0;
                //if (btag){
                // Decide which jet resolution template to use based on whether the
                // particle was a true b (not based on its b-tag):
                if (btrue){
                   i_flav = 1;
-                  cout << "There was a true b genjet" << endl;
+               //   cout << "There was a true b genjet" << endl;
                }
                //-------------------------------------------------------
 
@@ -869,7 +911,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                GenJets_smeared.push_back(smearedJet);
                dPx -= newP4.Px() - it->px();
                dPy -= newP4.Py() - it->py();
-               genJet2_btag[&(GenJets_smeared.back())] = btag;
+               //genJet2_btag[&(GenJets_smeared.back())] = btag;
 
                //-------------------------------------------------------
                // Compute the probability that a jet was b-tagged:
@@ -889,22 +931,27 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                         btag_correction *= newBTagEff/oldBTagEff;
                     }
                }
-               cout << "Btag correction factor (gen):" << btag_correction << endl;
+               //cout << "Btag correction factor (gen):" << btag_correction << endl;
 
                // Compute probability that the particle is b-tagged.
                // Ignore the given b-tag information here:
                p_btag = p_btrue * newBTagEff + (1 - p_btrue) * newBMisTagEff;
-               cout << "PBtag (gen): " << p_btag << endl;
-               double random_btag = RandomNumber();
+               //cout << "P(Btag) (gen): " << p_btag << endl;
+               r = new TRandom3(0); // generate a number in interval ]0,1] (0 is excluded)
+               double random_btag = r->Rndm();
                bool btagged = p_btag > random_btag;
-               if(btagged) {
-                   cout << "There was a b-tagged genjet" << endl;
-               }
+               delete r;
+               //if(btagged) {
+               //    cout << "There was a b-tagged genjet" << endl;
+               //}
                dynamic_genjet_btag_map[&(GenJets_smeared.back())] = btagged;
+               //dynamic_genjet_btag_map[*it] = btagged;
                //-------------------------------------------------------
 
                h_pBTrue_smear->Fill(p_btrue);
                h_pBTag_smear->Fill(p_btag);
+               h_random_BTrue_smear->Fill(random_number);
+               h_random_BTag_smear->Fill(random_btag);
                h_BTagCorrectionFactor_smear->Fill(btag_correction);
 
                ++i_jet;
@@ -1330,7 +1377,7 @@ void QCDBkgRS::FillPredictions_gen(const std::vector<reco::GenJet>& Jets_smeared
 // ------------ method called for each event  ------------
 void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   cout << "will analyze event" << endl;
+   //cout << "will analyze event" << endl;
    using namespace edm;
 
    //LeptonVeto
@@ -2131,8 +2178,12 @@ void QCDBkgRS::beginJob()
       h_pBTrue_smear->Sumw2();
       h_pBTag_smear = fs->make<TH1F> ("pBTag_smear", "pBTag", 1000, 0., 100.);
       h_pBTag_smear->Sumw2();
-      h_BTagCorrectionFactor_smear = fs->make<TH1F> ("BTagCorrectionFactor_smear", "BTagCorr", 1000, 0., 10.);
+      h_BTagCorrectionFactor_smear = fs->make<TH1F> ("BTagCorrectionFactor_smear", "BTagCorr", 100000, 0., 1000.);
       h_BTagCorrectionFactor_smear->Sumw2();
+      h_random_BTag_smear = fs->make<TH1F> ("Random_Number_BTag_smear", "BTagCorr", 1000, 0., 10.);
+      h_random_BTag_smear->Sumw2();
+      h_random_BTrue_smear = fs->make<TH1F> ("Random_Number_BTrue_smear", "BTagCorr", 1000, 0., 10.);
+      h_random_BTrue_smear->Sumw2();
 
       h_JetPt_gen = fs->make<TH1F> ("JetPt_gen", "Jet pt", 1000, 0., 1000.);
       h_JetPt_gen->Sumw2();

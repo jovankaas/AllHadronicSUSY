@@ -258,6 +258,8 @@ private:
    TH1F* h_pBTrue_smear;
    TH1F* h_pBTag_smear;
    TH1F* h_BTagCorrectionFactor_smear;
+   TH1F* h_random_BTrue_smear;
+   TH1F* h_random_BTag_smear;
 
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;
