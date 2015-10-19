@@ -892,7 +892,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                //-------------------------------------------------------
 
                double invScale = (it->p4()+neutrinos).pt() / it->pt();
-               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btag);
+               //double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btag);
+               // Use templates based on whether it was a true b-jet:
+               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btrue);
                double newE = it->energy() * scale * invScale;
                double newMass = it->mass() * scale;
                double newEta = rand_->Gaus(it->eta(), JetResolution_Eta(it->pt(), it->eta(), i_jet, i_flav));
