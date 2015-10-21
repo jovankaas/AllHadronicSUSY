@@ -796,11 +796,11 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
    }
 
    TRandom3 *r;
-      // Make new map where we will store our own decision of
-      // whether a jet is b-tagged (rather than take the given
-      // b-tag information) which will then later only be used
-      // to count the number of b-jets in an event:
-      std::map <const reco::GenJet*, bool> dynamic_genjet_btag_map;
+   // Make new map where we will store our own decision of
+   // whether a jet is b-tagged (rather than take the given
+   // b-tag information) which will then later only be used
+   // to count the number of b-jets in an event:
+   std::map <const reco::GenJet*, bool> dynamic_genjet_btag_map;
    for (int i = 1; i <= Ntries_; ++i) {
       int Ntries2 = 1;
       double w = weight_;
@@ -838,6 +838,8 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          //std::map <const reco::GenJet*, bool> genJet2_btag;
          GenJets_smeared.clear();
          // Iterate over jets:
+         //cout << "" << endl;
+         //cout << "Begin new iteration over jets" <<endl;
 
          for (edm::View<reco::GenJet>::const_iterator it = Jets_gen->begin(); it != Jets_gen->end(); ++it) {
 
@@ -879,7 +881,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                double random_number = r->Rndm();
                // The particle is a true b with probability p_btrue;
                // decide with the random number:
-               bool btrue = p_btrue > random_number;
+               bool btrue = p_btrue > random_number; // If the random number is < pbtrue, it is a true b
+               // For example: pbtrue = 0.1 (10%): then the random number is less likely to be
+               // less than 0.1, more likely to be greater than 0.1 -> true b if less than 0.1.
                delete r;
                int i_flav = 0;
                //if (btag){
@@ -941,12 +945,16 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                //cout << "P(Btag) (gen): " << p_btag << endl;
                r = new TRandom3(0); // generate a number in interval ]0,1] (0 is excluded)
                double random_btag = r->Rndm();
-               bool btagged = p_btag > random_btag;
+               bool btagged = p_btag > random_btag; // If the random number is < pbtag, it is btagged
+               // For example: pbtag = 0.1 (10%): then the random number is less likely to be
+               // less than 0.1, more likely to be greater than 0.1 -> btagged if less than 0.1.
                delete r;
                //if(btagged) {
                //    cout << "There was a b-tagged genjet" << endl;
                //}
                dynamic_genjet_btag_map[&(GenJets_smeared.back())] = btagged;
+               //cout << "This jet has " << ( btagged ? "been" : "not been") << " b-tagged" << endl;
+               //cout << "Originally this event was " << (btag ? "b-tagged" : "not b-tagged") <<endl;
                //dynamic_genjet_btag_map[*it] = btagged;
                //-------------------------------------------------------
 
@@ -1183,6 +1191,7 @@ int QCDBkgRS::calcNBJets_gen(const std::vector<reco::GenJet>& Jets_smeared, std:
       if (it->pt() > JetsHTPt_ && std::abs(it->eta()) < JetsHTEta_) {
          if (b_map[&(*it)]){
             ++NBJets;
+            //cout << "Found a bjet: NBJets is now " << NBJets << endl;
          }
       }
    }

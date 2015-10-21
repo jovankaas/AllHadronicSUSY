@@ -1,1 +1,1 @@
-filelist_christian_gensmear.txt
+filelist_gensmear_ownbtags.txt

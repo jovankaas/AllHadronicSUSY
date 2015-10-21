@@ -79,7 +79,7 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 ###############################################################################
 print "*** R+S Configuration **************************************************"
 #process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_bestMatching_DeadECALTP.root'
-process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_madgraph-MLM_bestMatching_angles_withNeutrinos_btag_effs.root'
+process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_finebins_bestMatching_angles_withNeutrinos_own_btag_effs.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
