@@ -1,1 +1,1 @@
-filelist_gensmear_ownbtags.txt
+filelist_gensmear_ownbtags_moreinfo.txt

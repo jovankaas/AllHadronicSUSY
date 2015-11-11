@@ -47,6 +47,7 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr = cms.untracked.PSet(placeholder = cms.untracked.bool(True))
 process.MessageLogger.cout = cms.untracked.PSet(INFO = cms.untracked.PSet(reportEvery = cms.untracked.int32(100)))
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
+process.options.SkipEvent = cms.untracked.vstring('ProductNotFound')
 
 ## --- Input Source ----------------------------------------------------
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))

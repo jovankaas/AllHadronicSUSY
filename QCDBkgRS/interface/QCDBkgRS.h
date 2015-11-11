@@ -260,6 +260,23 @@ private:
    TH1F* h_BTagCorrectionFactor_smear;
    TH1F* h_random_BTrue_smear;
    TH1F* h_random_BTag_smear;
+   TH2F* h_trueb_random_SmearedPt_Eta;
+   TH2F* h_trueb_SmearedPt_Eta;
+   TH2F* h_no_trueb_SmearedPt_Eta;
+   TH2F* h_trueb_btag_SmearedPt_Eta;
+   TH2F* h_no_trueb_btag_SmearedPt_Eta;
+   TH2F* h_btag_SmearedPt_Eta;
+   TH2F* h_btag_old_SmearedPt_Eta;
+   //std::vector<std::vector<TH1F*> > h_trueb_SmearedPt;
+   //TH1F* h_trueb_SmearedPt_temp;
+   //std::vector<std::vector<TH1F*> > h_no_trueb_SmearedPt;
+   //std::vector<std::vector<TH1F*> > h_trueb_btag_SmearedPt;
+   //std::vector<std::vector<TH1F*> > h_no_trueb_btag_SmearedPt;
+   //std::vector<std::vector<TH1F*> > h_btag_SmearedPt;
+   //std::vector<std::vector<TH1F*> > h_btag_old_SmearedPt;
+   //std::vector<double> EtaBinEdges;
+   TH1F* h_NB_Old;
+   TH1F* h_NB_New;
 
    TH1F* h_nJets_gen;
    TH1F* h_nJets_reco;
