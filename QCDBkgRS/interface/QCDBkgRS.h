@@ -259,9 +259,17 @@ private:
    TH1F* h_pBTag_smear;
    TH1F* h_BTagCorrectionFactor_smear;
    TH1F* h_random_BTrue_smear;
+   TH2F* h_btageff_SmearPt_Response;
+   TH2F* h_bmistageff_SmearPt_Response;
    TH1F* h_random_BTag_smear;
+   TH2F* h_btageff_genPt_Response;
+   TH2F* h_bmistageff_genPt_Response;
    TH2F* h_trueb_random_SmearedPt_Eta;
    TH2F* h_trueb_SmearedPt_Eta;
+   TH2F* h_trueb_genPt_Eta;
+   TH2F* h_no_trueb_genPt_Eta;
+   TH2F* h_trueb_btag_genPt_Eta;
+   TH2F* h_no_trueb_btag_genPt_Eta;
    TH2F* h_no_trueb_SmearedPt_Eta;
    TH2F* h_trueb_btag_SmearedPt_Eta;
    TH2F* h_no_trueb_btag_SmearedPt_Eta;

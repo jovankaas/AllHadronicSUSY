@@ -791,8 +791,6 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
       for (int j = 1; j <= Ntries2; ++j) {
 
          double btag_correction = 1.;
-         double p_btrue = 1.;
-         double p_btag = 1.;
 
          dynamic_genjet_btag_map.clear();
          GenJets_smeared.clear();
@@ -826,6 +824,8 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                //-------------------------------------------------------
                double BTagEff = GetBTagEfficiency(it->pt(), it->eta());
                double NBTrue = GetNBTrue(it->pt(), it->eta());
+               double p_btrue = 0.;
+               double p_btag = 0.;
                if(btag){
 
                    double NBTag = GetNBTag(it->pt(), it->eta());
@@ -843,34 +843,37 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
 
                // TEST: Take btrue to be the real btrue:
                bool btrue_random = p_btrue > random_number; // If the random number is < pbtrue, it is a true b
+               //
+               //
+               //
                bool btrue = false;
-               cout << " will now obtain the genconstituents" << endl;
+                 //--------- Decide on btrue based on b in genlevel constituents ---------
 
-               // From GenJet::getGenConstituents:
-               // From GenJet::getGenConstituent:
-               for (reco::Candidate::const_iterator daugh = it->begin(); daugh != it->end (); daugh++) {
-                    if ( (&*daugh != NULL) && (daugh != it->end ())) { // in range
+            //   // From GenJet::getGenConstituents
+            //   // and from GenJet::getGenConstituent:
+            //   // Decide on btrue based on whether there was a b inside:
+            //   for (reco::Candidate::const_iterator daugh = it->begin(); daugh != it->end (); daugh++) {
+            //        if ( (&*daugh != NULL) && (daugh != it->end ())) { // in range
 
-                        const reco::Candidate* constituent = &*daugh; // deref
-                        //double constituent_pt = constituent->pt();
-                        int constituent_pid = std::abs(constituent->pdgId());
-                        constituent_pid = constituent_pid % 10000;
+            //            const reco::Candidate* constituent = &*daugh; // deref
+            //            //double constituent_pt = constituent->pt();
+            //            int constituent_pid = std::abs(constituent->pdgId());
+            //            constituent_pid = constituent_pid % 10000;
 
-                        // Check if pid is that of a b meson:
-                        if (((500 <= constituent_pid) && (constituent_pid < 600)) || ((5000 <= constituent_pid) && (constituent_pid < 6000))){
-                            double conesize = 0.5;
-                            // Check if it was inside a cone of 0.5:
-                            // (Should you check for pt?)
-                            if((deltaR(*it, *constituent) < conesize)){
-                                btrue = true;
-                            }
-                        }
-                    }
-               }
+            //            // Check if pid is that of a b meson:
+            //            if (((500 <= constituent_pid) && (constituent_pid < 600)) || ((5000 <= constituent_pid) && (constituent_pid < 6000))){
+            //                double conesize = 0.5;
+            //                // Check if it was inside a cone of 0.5:
+            //                // (Should you check for pt?)
+            //                if((deltaR(*it, *constituent) < conesize)){
+            //                    btrue = true;
+            //                }
+            //            }
+            //        }
+            //   }
 
-               //cout << "This was randomly decided to be " << (btrue_random ? "a true b quark" : "not a b quark") << endl;
-               //cout << "This was " << (btrue ? "a true b quark" : "not a b quark") << endl;
-               //cout << "This was " << (btag ? "a btagged jet" : "not a b-tagged jet") << endl;
+               // Decide btrue based on probability (see above):
+               btrue = btrue_random;
 
                // For example: pbtrue = 0.1 (10%): then the random number is less likely to be
                // less than 0.1, more likely to be greater than 0.1 -> true b if less than 0.1.
@@ -914,6 +917,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                // Btag correction factors
                // This is deprecated
                double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
+               double oldBMisTagEff = GetBMisTagEfficiency(it->pt(), it->eta());
                if(btag){
                     // BTag efficiency should be less than 1!
                     // If btag efficiency is 1, this is because
@@ -967,20 +971,30 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                //     h_btag_old_SmearedPt.at(i_eta)->Fill(newPt, w);
                //}
 
+               h_btageff_SmearPt_Response->Fill(newPt, scale, w*newBTagEff);
+               h_bmistageff_SmearPt_Response->Fill(newPt, scale, w*newBMisTagEff);
+               h_btageff_genPt_Response->Fill(it->pt(), scale, w*oldBTagEff);
+               h_bmistageff_genPt_Response->Fill(it->pt(), scale, w*oldBMisTagEff);
+               double oldPt = it->pt();
+               double oldEta = it->eta();
 
                // Save TH2F instead:
                if(btrue_random){
                     h_trueb_random_SmearedPt_Eta->Fill(newPt, newEta, w);
+                    h_trueb_genPt_Eta->Fill(oldPt, oldEta, w);
                }
                if(btrue){
                     h_trueb_SmearedPt_Eta->Fill(newPt, newEta, w);
                     if(btagged){
                         h_trueb_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
+                        h_trueb_btag_genPt_Eta->Fill(oldPt, oldEta, w);
                     }
                } else {
                     h_no_trueb_SmearedPt_Eta->Fill(newPt, newEta, w);
+                    h_no_trueb_genPt_Eta->Fill(oldPt, oldEta, w);
                     if(btagged){
                         h_no_trueb_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
+                        h_no_trueb_btag_genPt_Eta->Fill(oldPt, oldEta, w);
                     }
                }
                if(btagged){
@@ -1007,10 +1021,10 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
             // for each iteration, use a newly computed map genjet <-> btag.
             FillPredictions_gen(GenJets_smeared, i, w, dynamic_genjet_btag_map);
             int NB_Old = calcNBJets_gen(GenJets_smeared, genJet2_btag);
-            h_NB_Old->Fill(NB_Old);
+            h_NB_Old->Fill(NB_Old, w);
             //cout << "Number of old btagged jets: " << NB_Old << endl;
             int NB_New = calcNBJets_gen(GenJets_smeared, dynamic_genjet_btag_map);
-            h_NB_New->Fill(NB_New);
+            h_NB_New->Fill(NB_New, w);
             //cout << "Number of new btagged jets: " << NB_New << endl;
 
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
@@ -2271,14 +2285,30 @@ void QCDBkgRS::beginJob()
       int etamax = EtaBinEdges_.back();
       int etamin = EtaBinEdges_.front();
       cout << "# eta bins: " << etabins << " and etamin: " << etamin << " and etamax: " << etamax << endl;
+      h_btageff_genPt_Response = fs->make<TH2F> ("h_btageff_genPt_Response", "h_btageff_genPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_btageff_genPt_Response->Sumw2();
+      h_bmistageff_genPt_Response = fs->make<TH2F> ("h_bmistageff_genPt_Response", "h_bmistageff_genPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_bmistageff_genPt_Response->Sumw2();
+      h_btageff_SmearPt_Response = fs->make<TH2F> ("h_btageff_SmearPt_Response", "h_btageff_SmearPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_btageff_SmearPt_Response->Sumw2();
+      h_bmistageff_SmearPt_Response = fs->make<TH2F> ("h_bmistageff_SmearPt_Response", "h_bmistageff_SmearPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_bmistageff_SmearPt_Response->Sumw2();
       h_trueb_SmearedPt_Eta = fs->make<TH2F> ("h_trueb_SmearedPt_Eta", "h_trueb_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
       h_trueb_SmearedPt_Eta->Sumw2();
       h_trueb_random_SmearedPt_Eta = fs->make<TH2F> ("h_trueb_random_SmearedPt_Eta", "h_trueb_random_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
       h_trueb_random_SmearedPt_Eta->Sumw2();
+      h_trueb_genPt_Eta = fs->make<TH2F> ("h_trueb_genPt_Eta", "h_trueb_genPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
+      h_trueb_genPt_Eta->Sumw2();
+      h_no_trueb_genPt_Eta = fs->make<TH2F> ("h_no_trueb_genPt_Eta", "h_no_trueb_genPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
+      h_no_trueb_genPt_Eta->Sumw2();
       h_no_trueb_SmearedPt_Eta = fs->make<TH2F> ("h_no_trueb_SmearedPt_Eta", "h_no_trueb_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
       h_no_trueb_SmearedPt_Eta->Sumw2();
+      h_trueb_btag_genPt_Eta = fs->make<TH2F> ("h_trueb_btag_genPt_Eta", "h_trueb_btag_genPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
+      h_trueb_btag_genPt_Eta->Sumw2();
       h_trueb_btag_SmearedPt_Eta = fs->make<TH2F> ("h_trueb_btag_SmearedPt_Eta", "h_trueb_btag_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
       h_trueb_btag_SmearedPt_Eta->Sumw2();
+      h_no_trueb_btag_genPt_Eta = fs->make<TH2F> ("h_no_trueb_btag_genPt_Eta", "h_no_trueb_btag_genPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
+      h_no_trueb_btag_genPt_Eta->Sumw2();
       h_no_trueb_btag_SmearedPt_Eta = fs->make<TH2F> ("h_no_trueb_btag_SmearedPt_Eta", "h_no_trueb_btag_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
       h_no_trueb_btag_SmearedPt_Eta->Sumw2();
       h_btag_SmearedPt_Eta = fs->make<TH2F> ("h_btag_SmearedPt_Eta", "h_btag_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
