@@ -2285,13 +2285,13 @@ void QCDBkgRS::beginJob()
       int etamax = EtaBinEdges_.back();
       int etamin = EtaBinEdges_.front();
       cout << "# eta bins: " << etabins << " and etamin: " << etamin << " and etamax: " << etamax << endl;
-      h_btageff_genPt_Response = fs->make<TH2F> ("h_btageff_genPt_Response", "h_btageff_genPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_btageff_genPt_Response = fs->make<TH2F> ("h_btageff_genPt_Response", "h_btageff_genPt_Response", 200, 0., 1000., 10, 0., 5.);
       h_btageff_genPt_Response->Sumw2();
-      h_bmistageff_genPt_Response = fs->make<TH2F> ("h_bmistageff_genPt_Response", "h_bmistageff_genPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_bmistageff_genPt_Response = fs->make<TH2F> ("h_bmistageff_genPt_Response", "h_bmistageff_genPt_Response", 200, 0., 1000., 10, 0, 5.);
       h_bmistageff_genPt_Response->Sumw2();
-      h_btageff_SmearPt_Response = fs->make<TH2F> ("h_btageff_SmearPt_Response", "h_btageff_SmearPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_btageff_SmearPt_Response = fs->make<TH2F> ("h_btageff_SmearPt_Response", "h_btageff_SmearPt_Response", 200, 0., 1000., 10, 0., 5.);
       h_btageff_SmearPt_Response->Sumw2();
-      h_bmistageff_SmearPt_Response = fs->make<TH2F> ("h_bmistageff_SmearPt_Response", "h_bmistageff_SmearPt_Response", 200, 0., 1000., 10, -1., 1.);
+      h_bmistageff_SmearPt_Response = fs->make<TH2F> ("h_bmistageff_SmearPt_Response", "h_bmistageff_SmearPt_Response", 200, 0., 1000., 10, 0., 5.);
       h_bmistageff_SmearPt_Response->Sumw2();
       h_trueb_SmearedPt_Eta = fs->make<TH2F> ("h_trueb_SmearedPt_Eta", "h_trueb_SmearedPt_Eta", 200, 0., 1000., etabins, etamin, etamax);
       h_trueb_SmearedPt_Eta->Sumw2();
