@@ -218,7 +218,7 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          double resPhi = matchedJet->phi() - it->phi();
          double resEta = matchedJet->eta() - it->eta();
          //double res = allJetsInCone.pt() / it->pt();
-         h_tot_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
+         h_tot_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
          h_tot_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
          h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
       
@@ -271,11 +271,11 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          //if (bTag) {
          // Use templates based on whether it is a true b or not (not based on btags):
          if (bTrue) {
-            h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
+            h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
             h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
             h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          } else {
-            h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(res, weight);
+            h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
             h_nob_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
             h_nob_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          }

@@ -329,6 +329,44 @@ double QCDBkgRS::GetBMisTagEfficiency(double pt, double eta)
     return bmistageff;
 }
 
+
+
+
+//--------------------------------------------------------------------------
+// Check for B content in GenJet:
+//--------------------------------------------------------------------------
+bool QCDBkgRS::GenJetHasBContent(const edm::View<reco::GenJet>::const_iterator& generatorJet)
+{
+    try{
+        for (reco::Candidate::const_iterator daugh = generatorJet->begin(); daugh != generatorJet->end (); daugh++) {
+                     if ( (&*daugh != NULL) && (daugh != generatorJet->end ())) { // in range
+
+                        //const reco::Candidate* constituent = &*daugh; // deref
+                        //double constituent_pt = constituent->pt();
+                           // deref
+                            const reco::Candidate* constituent = dynamic_cast<const reco::Candidate*>(&(*daugh));
+                            int constituent_pid = std::abs(constituent->pdgId());
+                            constituent_pid = constituent_pid % 10000;
+    
+                            // Check if pid is that of a b meson:
+                            if (((500 <= constituent_pid) && (constituent_pid < 600)) || ((5000 <= constituent_pid) && (constituent_pid < 6000))){
+                                double conesize = 0.5;
+                                // Check if it was inside a cone of 0.5:
+                                // (Should you check for pt?)
+                                if((deltaR(*generatorJet, *constituent) < conesize)){
+                                    return true;
+                                }
+                            }
+                    }
+        }
+    } catch(std::bad_cast &e) {
+        cout << e.what() << "jet constituent not of type reco::Candidate" <<endl;
+        return false;
+
+    }
+    return false;
+}
+
 //
 //--------------------------------------------------------------------------
 // Get NBTag:
@@ -411,9 +449,11 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
    double MHTx_low = 0;
    double MHTy_low = 0;
 
+
    //// Fill measured particles to vector
    int i = 0;
    for (edm::View<pat::Jet>::const_iterator it = Jets_rec-> begin(); it != Jets_rec->end(); ++it) {
+
 
       //if (it->pt() < rebalancedJetPt_ || abs(it->pt()) > 3.0) {
       //if (it->pt() < rebalancedJetPt_ || it->chargedEmEnergyFraction()>0.9 || it->muonEnergyFraction()>0.9) {
@@ -530,6 +570,7 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
       //cout << "RECO: " << i << "th: pt = " << rebalancedJet.pt() << " phi = " << rebalancedJet.phi() << endl;
       rebalancedJet.setP4(newP4);
       //cout << "REB: " << i << "th: pt = " << rebalancedJet.pt() << " phi = " << rebalancedJet.phi() << endl;
+
       Jets_reb.push_back(rebalancedJet);
       dPx -= newP4.Px() - measured.at(i)->getCurr4Vec()->Px();
       dPy -= newP4.Py() - measured.at(i)->getCurr4Vec()->Py();
@@ -773,6 +814,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
       }
    }
 
+   ht_ = HT;
    TRandom3 *r;
    // Make new map where we will store our own decision of
    // whether a jet is b-tagged (rather than take the given
@@ -780,6 +822,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
    // to count the number of b-jets in an event:
    std::map <const reco::GenJet*, bool> dynamic_genjet_btag_map;
    for (int i = 1; i <= Ntries_; ++i) {
+      
+
+      smearNum_ ++;
       int Ntries2 = 1;
       double w = weight_;
       if (cleverPrescaleTreating_ == true && weight_ > 1) {
@@ -798,6 +843,12 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
 
          int i_jet = 0;
 
+         btageff_.clear();
+         bmistageff_.clear();
+         ptold_.clear();
+         ptnew_.clear();
+         nBJets_ = 0;
+         nTrueBJets_ = 0;
          for (edm::View<reco::GenJet>::const_iterator it = Jets_gen->begin(); it != Jets_gen->end(); ++it) {
 
             //// Find additional neutrinos and add them back since these are not included in the genJets
@@ -875,6 +926,10 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                // Decide btrue based on probability (see above):
                btrue = btrue_random;
 
+               // Decide btrue based on btag, which is for genjets based on
+               // whether a b-flavor particle was present in the jet:
+               btrue = btag;
+
                // For example: pbtrue = 0.1 (10%): then the random number is less likely to be
                // less than 0.1, more likely to be greater than 0.1 -> true b if less than 0.1.
                delete r;
@@ -887,11 +942,13 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                }
                //-------------------------------------------------------
 
-               double invScale = (it->p4()+neutrinos).pt() / it->pt();
+               //double invScale = (it->p4()+neutrinos).pt() / it->pt();
                //double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btag);
                // Use templates based on whether it was a true b-jet:
-               double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btrue);
-               double newE = it->energy() * scale * invScale;
+               //double scale = JetResolutionHist_Pt_Smear(it->pt(), it->eta(), i_jet, HT, NJets_gen, btrue);
+               double scale = JetResolutionHist_Pt_Smear((it->p4()+neutrinos).pt(), it->eta(), i_jet, HT, NJets_gen, btrue);
+               //double newE = it->energy() * scale * invScale;
+               double newE = (it->p4() + neutrinos).energy() * scale;
                double newMass = it->mass() * scale;
                double newEta = rand_->Gaus(it->eta(), JetResolution_Eta(it->pt(), it->eta(), i_jet, i_flav));
                double newPhi = rand_->Gaus(it->phi(), JetResolution_Phi(it->pt(), it->eta(), i_jet, i_flav));
@@ -914,6 +971,10 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                //-------------------------------------------------------
                double newBTagEff = GetBTagEfficiency(newPt, newEta);
                double newBMisTagEff = GetBMisTagEfficiency(newPt, newEta);
+               btageff_.push_back(newBTagEff);
+               bmistageff_.push_back(newBMisTagEff);
+               ptold_.push_back(it->pt());
+               ptnew_.push_back(newPt);
                // Btag correction factors
                // This is deprecated
                double oldBTagEff = GetBTagEfficiency(it->pt(), it->eta());
@@ -938,9 +999,10 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                // For example: pbtag = 0.1 (10%): then the random number is less likely to be
                // less than 0.1, more likely to be greater than 0.1 -> btagged if less than 0.1.
                delete r;
-               //if(btagged) {
+               if(btagged) {
+                     nBJets_ ++;
                //    cout << "There was a b-tagged genjet" << endl;
-               //}
+               }
                dynamic_genjet_btag_map[&(GenJets_smeared.back())] = btagged;
                //cout << "This jet has " << ( btagged ? "been" : "not been") << " b-tagged" << endl;
                //cout << "Originally this event was " << (btag ? "b-tagged" : "not b-tagged") <<endl;
@@ -984,6 +1046,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                     h_trueb_genPt_Eta->Fill(oldPt, oldEta, w);
                }
                if(btrue){
+                    nTrueBJets_ ++;
                     h_trueb_SmearedPt_Eta->Fill(newPt, newEta, w);
                     if(btagged){
                         h_trueb_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
@@ -998,6 +1061,7 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
                     }
                }
                if(btagged){
+                    nBJets_ ++;
                     h_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
                }
                if(btag){
@@ -1017,9 +1081,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          //Fill HT and MHT prediction histos for i-th iteration of smearing
          int NJets = calcNJets_gen(GenJets_smeared);
          if (NJets >= NJetsSave_) {
-            //FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
+            FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
             // for each iteration, use a newly computed map genjet <-> btag.
-            FillPredictions_gen(GenJets_smeared, i, w, dynamic_genjet_btag_map);
+            //FillPredictions_gen(GenJets_smeared, i, w, dynamic_genjet_btag_map);
             int NB_Old = calcNBJets_gen(GenJets_smeared, genJet2_btag);
             h_NB_Old->Fill(NB_Old, w);
             //cout << "Number of old btagged jets: " << NB_Old << endl;
@@ -1051,6 +1115,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
             DeltaPhi3_pred = 0.;
             DeltaPhiMinN_pred = 0.;
          }
+      }
+      if(mht_ > 0){
+          tree_->Fill();
       }
    }
 
@@ -1415,6 +1482,7 @@ void QCDBkgRS::FillPredictions_gen(const std::vector<reco::GenJet>& Jets_smeared
    int NBJets = calcNBJets_gen(Jets_smeared, b_map);
    double HT = calcHT_gen(Jets_smeared);
    math::PtEtaPhiMLorentzVector vMHT = calcMHT_gen(Jets_smeared, JetsMHTPt_);
+   mht_ = vMHT.mag();
    math::PtEtaPhiMLorentzVector vMET = calcMHT_gen(Jets_smeared, 30.);
    double MHT = vMHT.pt();
    //  bool minDeltaPhi = calcMinDeltaPhi_gen(Jets_smeared, vMHT);
@@ -1436,7 +1504,10 @@ void QCDBkgRS::FillPredictions_gen(const std::vector<reco::GenJet>& Jets_smeared
 void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
-
+   edm::EventAuxiliary aux = iEvent.eventAuxiliary();
+   runNum_       = aux.run();
+   evtNum_       = aux.event();
+   smearNum_     = 0;
    //LeptonVeto
    edm::Handle<int> NLeptons;
    iEvent.getByLabel(leptonTag_, NLeptons);
@@ -1515,10 +1586,15 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    int NJets_reco = 0;
    int JetCounter = 0;
    //// Fill measured particles to vector
+   //
+   nBJets_before_reb_ = 0;
    for (edm::View<pat::Jet>::const_iterator it = Jets_rec.begin(); it != Jets_rec.end(); ++it) {
       JetCounter++;
       h_JetPt_reco->Fill(it->pt(), weight_);
 
+      if (it->bDiscriminator(btagTag_) > btagCut_){
+          nBJets_after_reb_++;
+      }
       if( JetCounter == 1 ) {
          Jet1_rec = &(*it);
       }
@@ -1743,12 +1819,20 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    // ------------------------------------------------------------------------ //
    // plots for matched/not-matched reco - gen jets
+   ptbefore_reb_.clear();
+   ptafter_reb_.clear();
+   nBJets_after_reb_ = 0;
    if (gj_present) {
       int NNN = 0;
       for (edm::View<reco::GenJet>::const_iterator it = Jets_gen.begin(); it != Jets_gen.end(); ++it) {
          double dRmin = 100;
          const reco::Jet* matchedJet = 0;
          double addActivity = 0;
+
+      ptbefore_reb_.push_back(it->pt());
+      //if (GenJetHasBContent(it)) {
+      //    nBJets_before_reb_++;
+      //}
          for (edm::View<pat::Jet>::const_iterator jt = Jets_rec.begin(); jt != Jets_rec.end(); ++jt) {
             double dR = deltaR(*jt, *it);
             if (dR < 0.7) {
@@ -1870,6 +1954,10 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       const pat::Jet* Jet2_reb = 0;
       JetCounter = 0;
       for (vector<pat::Jet>::const_iterator it = Jets_reb-> begin(); it != Jets_reb->end(); ++it) {
+         ptafter_reb_.push_back(it->pt());
+         if (it->bDiscriminator(btagTag_) > btagCut_){
+             nBJets_after_reb_++;
+         }
          JetCounter++;
          h_JetPt_reb->Fill(it->pt(), weight_);
 
@@ -2030,8 +2118,11 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                }
             }
             if (dRmin < 0.15){
-               if (matchedJet->bDiscriminator(btagTag_) > btagCut_){
-                  genJet_btag[&(*it)] = true;
+               // Or look for genlevel b's:
+               if (fabs(matchedJet->partonFlavour()) == 5) {
+                   genJet_btag[&(*it)] = true;
+               //if (matchedJet->bDiscriminator(btagTag_) > btagCut_){
+               //   genJet_btag[&(*it)] = true;
                } else {
                   genJet_btag[&(*it)] = false;
                }
@@ -2284,6 +2375,27 @@ void QCDBkgRS::beginJob()
       int etabins = 12; //EtaBinEdges_.size() - 1; This was 12 in MC Resolutions
       int etamax = EtaBinEdges_.back();
       int etamin = EtaBinEdges_.front();
+
+      tree_ = fs->make<TTree>("kinematics", "kinematics");  
+      tree_->SetAutoSave(10000000000);
+      tree_->SetAutoFlush(1000000);
+      tree_->Branch("RunNum",&runNum_,"RunNum/i");
+      tree_->Branch("EvtNum",&evtNum_,"EvtNum/i");
+      tree_->Branch("SmearNum",&smearNum_,"SmearNum/i");
+      tree_->Branch("ht",&ht_,"ht/F");
+      tree_->Branch("NBJets",&nBJets_,"NBJets/i");
+      tree_->Branch("NBJets_before_reb",&nBJets_before_reb_,"NBJets_before_reb/i");
+      tree_->Branch("NBJets_after_reb",&nBJets_after_reb_,"NBJets_after_reb/i");
+      tree_->Branch("NTrueBJets",&nTrueBJets_,"NTrueBJets/i");
+      tree_->Branch("mht",&mht_,"mht/F");
+      tree_->Branch("btageff", "std::vector<Float_t>", &(btageff_), 32000, 0);
+      tree_->Branch("bmistageff", "std::vector<Float_t>", &(bmistageff_), 32000, 0);
+      tree_->Branch("ptold", "std::vector<Float_t>", &(ptold_), 32000, 0);
+      tree_->Branch("ptnew", "std::vector<Float_t>", &(ptnew_), 32000, 0);
+      tree_->Branch("ptbefore_reb", "std::vector<Float_t>", &(ptbefore_reb_), 32000, 0);
+      tree_->Branch("ptafter_reb", "std::vector<Float_t>", &(ptafter_reb_), 32000, 0);
+
+
       cout << "# eta bins: " << etabins << " and etamin: " << etamin << " and etamax: " << etamax << endl;
       h_btageff_genPt_Response = fs->make<TH2F> ("h_btageff_genPt_Response", "h_btageff_genPt_Response", 200, 0., 1000., 10, 0., 5.);
       h_btageff_genPt_Response->Sumw2();

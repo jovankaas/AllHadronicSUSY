@@ -72,6 +72,25 @@ private:
    virtual void beginJob();
    virtual void analyze(const edm::Event&, const edm::EventSetup&);
    virtual void endJob();
+
+   // For tree of kinematic observables
+   UInt_t evtNum_;
+   UInt_t runNum_;
+   UInt_t smearNum_;
+   UInt_t nBJets_;
+   UInt_t nBJets_before_reb_;
+   UInt_t nBJets_after_reb_;
+   UInt_t nTrueBJets_;
+   Float_t ht_;
+   Float_t mht_;
+   //Float_t btageff_;
+   std::vector<Float_t> btageff_;
+   std::vector<Float_t> bmistageff_;
+   std::vector<Float_t> ptold_;
+   std::vector<Float_t> ptbefore_reb_;
+   std::vector<Float_t> ptafter_reb_;
+   std::vector<Float_t> ptnew_;
+   TTree *tree_;
    
    typedef math::XYZTLorentzVector LorentzVector;
    typedef std::vector<std::string>::const_iterator StrIter;
@@ -209,6 +228,7 @@ private:
    void FillDeltaPhiPredictions(const std::vector<pat::Jet>&, math::PtEtaPhiMLorentzVector&); 
    void FillLeadingJetPredictions_gen(const std::vector<reco::GenJet>&); 
    void FillDeltaPhiPredictions_gen(const std::vector<reco::GenJet>&, math::PtEtaPhiMLorentzVector&); 
+   bool GenJetHasBContent(const edm::View<reco::GenJet>::const_iterator&);
    double GetRebalanceCorrection(double jet_pt, bool btag);
    double GetBTagEfficiency(double pt, double eta);
    double GetBMisTagEfficiency(double pt, double eta);
