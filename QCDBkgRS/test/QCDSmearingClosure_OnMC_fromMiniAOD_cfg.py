@@ -82,7 +82,7 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 ###############################################################################
 print "*** R+S Configuration **************************************************"
 #process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_bestMatching_DeadECALTP.root'
-process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_finebins_bestMatching_angles_withNeutrinos_own_btag_effs.root'
+process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_bestMatching_angles_withNeutrinos_NeutrinosInBins_own_btags.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
@@ -92,12 +92,12 @@ process.QCDfromSmearing.InputHistoPhi_HF = 'h_b_JetAll_ResponsePhi'
 process.QCDfromSmearing.InputHistoPt_NoHF = 'h_nob_JetAll_ResponsePt'
 process.QCDfromSmearing.InputHistoEta_NoHF = 'h_nob_JetAll_ResponseEta'
 process.QCDfromSmearing.InputHistoPhi_NoHF = 'h_nob_JetAll_ResponsePhi'
-process.QCDfromSmearing.RebalanceCorrectionFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withBTagCorrections_pt10.root'
+process.QCDfromSmearing.RebalanceCorrectionFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withNeutrinosEverywhere.root'
 #'/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
-process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/B_Mis_TagEfficiencies_Spring15MadGraph.root'
+process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/B_Mis_TagEfficiencies_Neutrinos_everywhere_Spring15MadGraph.root'
 process.QCDfromSmearing.NRebin = 1
-#process.QCDfromSmearing.SmearCollection = 'Reco'
-process.QCDfromSmearing.SmearCollection = 'Gen'
+process.QCDfromSmearing.SmearCollection = 'Reco'
+#process.QCDfromSmearing.SmearCollection = 'Gen'
 process.QCDfromSmearing.PtBinEdges_scaling = cms.vdouble(0., 7000.)
 process.QCDfromSmearing.EtaBinEdges_scaling = cms.vdouble(0.0, 5.0)
 process.QCDfromSmearing.AdditionalSmearing = cms.vdouble(1.0)
@@ -120,7 +120,7 @@ process.QCDfromSmearing.MHTSave = cms.double(0.)
 #process.QCDfromSmearing.HTSave = cms.double(500.)
 #process.QCDfromSmearing.MHTSave = cms.double(200.)
 process.QCDfromSmearing.cleverPrescaleTreating = False
-process.QCDfromSmearing.useRebalanceCorrectionFactors = False
+process.QCDfromSmearing.useRebalanceCorrectionFactors = True
 process.QCDfromSmearing.useBTagEfficiencyFactors = True
 process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = False
 process.QCDfromSmearing.MHTcut_low = cms.double(200.)
@@ -131,6 +131,7 @@ process.QCDfromSmearing.HTcut_medium = cms.double(800.)
 process.QCDfromSmearing.HTcut_high = cms.double(1000.)
 process.QCDfromSmearing.HTcut_veryhigh = cms.double(1200.)
 process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
+process.QCDfromSmearing.testMode = True
 ###############################################################################
 
 VarsInt = cms.vstring()

@@ -168,6 +168,7 @@ private:
    bool useRebalanceCorrectionFactors_;
    bool useBTagEfficiencyFactors_;
    bool useCleverRebalanceCorrectionFactors_;
+   bool testMode_;
    double A0RMS_;
    double A1RMS_;
    double probExtreme_;

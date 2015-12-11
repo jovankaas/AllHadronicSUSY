@@ -72,6 +72,7 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    useRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useRebalanceCorrectionFactors");
    useBTagEfficiencyFactors_ = iConfig.getParameter<bool> ("useBTagEfficiencyFactors");
    useCleverRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useCleverRebalanceCorrectionFactors");
+   testMode_ = iConfig.getParameter<bool> ("testMode");
    A0RMS_ = iConfig.getParameter<double> ("A0RMS");
    A1RMS_ = iConfig.getParameter<double> ("A1RMS");
    probExtreme_ = iConfig.getParameter<double> ("probExtreme");
@@ -662,6 +663,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                // decide with the random number:
                bool btrue = p_btrue > random_number;
                int i_flav = 0;
+               btrue = btag;
                //if (btag){
                // Decide which jet resolution template to use based on whether the
                // particle was a true b (not based on its b-tag):
@@ -744,7 +746,8 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                // Add btag to map.
                // This is the information used to determine the number
                // of b's in an event.
-               dynamic_jet_btag_map[&(Jets_smeared.back())] = btagged;
+               dynamic_jet_btag_map[&(Jets_smeared.back())] = btag;
+               //dynamic_jet_btag_map[&(Jets_smeared.back())] = btagged;
                //-------------------------------------------------------
 
                h_pBTrue_smear->Fill(p_btrue);
@@ -765,6 +768,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
          int NJets = calcNJets(Jets_smeared);
          if (NJets >= NJetsSave_) {
             //FillPredictions(Jets_smeared, i, w*btag_correction);
+            //FillPredictions(Jets_smeared, i, w, dynamic_jet_btag_map);
             FillPredictions(Jets_smeared, i, w, dynamic_jet_btag_map);
 
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
@@ -1507,6 +1511,9 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::EventAuxiliary aux = iEvent.eventAuxiliary();
    runNum_       = aux.run();
    evtNum_       = aux.event();
+   if( testMode_ && (evtNum_ % 10 != 0)){
+       return;
+   }
    smearNum_     = 0;
    //LeptonVeto
    edm::Handle<int> NLeptons;
