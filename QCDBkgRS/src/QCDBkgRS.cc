@@ -458,6 +458,7 @@ bool QCDBkgRS::RebalanceJets_KinFitter(edm::View<pat::Jet>* Jets_rec, std::vecto
 
       //if (it->pt() < rebalancedJetPt_ || abs(it->pt()) > 3.0) {
       //if (it->pt() < rebalancedJetPt_ || it->chargedEmEnergyFraction()>0.9 || it->muonEnergyFraction()>0.9) {
+      // Typically, this rebalancedJetPt is min. 10 GeV:
       if (it->pt() < rebalancedJetPt_) {
          if (rebalanceMode_ == "MHTall") {
             MHTx_low -= it->px();
