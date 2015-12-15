@@ -211,10 +211,19 @@ process.MCReso.jetTag = mcResoJetTag
 process.MCReso.fileName = mcResoFileName
 process.MCReso.leptonTag = mcResoLeptonTag
 
+
+
+## --- MET Filters -----------------------------------------------
+## We don't use "import *" because the cff contains some modules for which the C++ class doesn't exist
+## and this triggers an error under unscheduled mode
+
+from RecoMET.METFilters.metFilters_cff import EcalDeadCellTriggerPrimitiveFilter
 ## --- Setup dump event content ----------------------------------------
 process.dump   = cms.EDAnalyzer("EventContentAnalyzer")
 
+process.ECALDeadCellFilter = EcalDeadCellTriggerPrimitiveFilter.clone()
 process.p = cms.Path(
+                     process.ECALDeadCellFilter *
                      #process.dump *
                      process.IsolatedElectronTracksVeto *
                      process.IsolatedMuonTracksVeto *

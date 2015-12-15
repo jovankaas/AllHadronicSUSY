@@ -418,7 +418,11 @@ process.QCDfromSmearingTailDN.uncertaintyName = 'TailDN'
 process.dump   = cms.EDAnalyzer("EventContentAnalyzer")
 ###############################################################################
 
+## --- MET Filters -----------------------------------------------
+from RecoMET.METFilters.metFilters_cff import EcalDeadCellTriggerPrimitiveFilter
+process.ECALDeadCellFilter = EcalDeadCellTriggerPrimitiveFilter.clone()
 process.prediction = cms.Path(
+                              process.ECALDeadCellFilter *
                               process.patJetCorrFactorsReapplyJEC *
                               process.patJetsReapplyJEC *
                               process.Baseline *
