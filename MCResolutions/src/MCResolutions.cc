@@ -222,7 +222,7 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          h_tot_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
          h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
       
-         cout << "Determine btag/btrue information" << endl;
+         // "Determine btag/btrue information"
          
          //// Use algorithmic matching for heavy flavour ID
          bool bTrue = false;
@@ -233,42 +233,38 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
          //// Use b-tag for heavy flavour ID
          bool bTag = false;
-         cout << "Store btag/btrue information" << endl;
+         // "Store btag/btrue information"
          if ( matchedJet->bDiscriminator(_btagTag) > _btagCut) {
             bTag = true;
-            cout << "btag" << endl;
+            // "btag"
             h_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
          } else {
-            cout << "no btag" << endl;
+            // "no btag"
             h_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
          }
 
          if(bTrue){
-             cout << "true b" << endl;
+             // "true b"
              h_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              if(bTag){
-                cout << "true b and btag" << endl;
+                // "true b and btag"
                 h_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              } else {
-                cout << "true b and no btag" << endl;
+                // "true b and no btag"
                 h_trueb_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              }
          } else {
-             cout << "no true b" << endl;
+             // "no true b"
              h_no_trueb_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              if(bTag){
-                cout << "no true b and btag" << endl;
+                // "no true b and btag"
                 h_no_trueb_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              } else {
-                cout << "no true b and no btag" << endl;
+                // "no true b and no btag"
                 h_no_trueb_no_btag_RecoPt.at(EtaBin(it->eta()))->Fill(it->pt(), weight);
              }
          }
 
-         
-         //if (it->pt() > 100 && bTag) cout << "Btag: " << bTag << ", response (old):" << matchedJet->pt() / it->pt() << ",  response (new): " << res << endl;
-
-         //if (bTag) {
          // Use templates based on whether it is a true b or not (not based on btags):
          if (bTrue) {
             h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
