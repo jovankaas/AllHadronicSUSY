@@ -32,7 +32,7 @@ void GetBMisTag()
    //SetPlotStyle();
 
    // --- define output file for ps ---//
-   TString outfile = "BTagEfficiency/B_Mis_TagEfficiencies_Spring15MadGraph_DeadECALTP";
+   TString outfile = "BTagEfficiency/B_Mis_TagEfficiencies_Spring15MadGraph_DeadECALTP_recoPTbins";
 
    // The number of true b's as a function of pt and eta
    std::vector<TH1F*> BTrue_vs_RecoPt_Eta;
@@ -90,7 +90,7 @@ void GetBMisTag()
    string root_file;
 
    // madgraph
-   ifstream myfile ("filelists_phys14/filelist_mc_ownbtags_deadecaltp.txt");
+   ifstream myfile ("filelists_phys14/filelist_mc_deadecaltp_recoptbins.txt");
    //ifstream myfile ("filelists_phys14/test.txt");
    if (myfile.is_open()) {
       while( myfile.good() ) {

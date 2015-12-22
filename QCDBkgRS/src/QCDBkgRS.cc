@@ -609,6 +609,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
    // b-tag information) which will then later only be used
    // to count the number of b-jets in an event:
    std::map <const reco::Jet*, bool> dynamic_jet_btag_map;
+   std::map <const reco::Jet*, bool> newdynamic_jet_btag_map;
    for (int i = 1; i <= Ntries_; ++i) {
       int Ntries2 = 1;
       double w = weight_;
@@ -626,6 +627,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
 
          // Clear map:
          dynamic_jet_btag_map.clear();
+         newdynamic_jet_btag_map.clear();
 
          // Iterate over jets:
          for (std::vector<pat::Jet>::const_iterator it = Jets_reb.begin(); it != Jets_reb.end(); ++it) {
@@ -662,9 +664,9 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
 
                // The particle is a true b with probability p_btrue;
                // decide with the random number:
-               bool btrue = p_btrue > random_number;
+               bool btrue_random = p_btrue > random_number;
                int i_flav = 0;
-               btrue = btag;
+               bool btrue = btag; // for now define true b based on b-tag
                //if (btag){
                // Decide which jet resolution template to use based on whether the
                // particle was a true b (not based on its b-tag):
@@ -704,6 +706,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                // Btag correction factors
                // This is deprecated
                double oldBTagEff = BTagEff;
+               double oldBMisTagEff = GetBMisTagEfficiency(it->pt(), it->eta());
                //cout << "NewBtageff: "<< newBTagEff << " old btageff: " << oldBTagEff << " correction: " << newBTagEff/oldBTagEff << endl;
                // Take care not to divide by zero:
                if(btag && (oldBTagEff > 0)){
@@ -748,6 +751,7 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                // This is the information used to determine the number
                // of b's in an event.
                dynamic_jet_btag_map[&(Jets_smeared.back())] = btag;
+               newdynamic_jet_btag_map[&(Jets_smeared.back())] = btagged;
                //dynamic_jet_btag_map[&(Jets_smeared.back())] = btagged;
                //-------------------------------------------------------
 
@@ -755,12 +759,51 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
                h_pBTag_smear->Fill(p_btag);
                h_random_BTrue_smear->Fill(random_number);
                h_random_BTag_smear->Fill(random_btag);
+
+
+               h_btageff_SmearPt_Response->Fill(newPt, scale, w*newBTagEff);
+               h_bmistageff_SmearPt_Response->Fill(newPt, scale, w*newBMisTagEff);
+               h_btageff_genPt_Response->Fill(it->pt(), scale, w*oldBTagEff);
+               h_bmistageff_genPt_Response->Fill(it->pt(), scale, w*oldBMisTagEff);
+               double oldPt = it->pt();
+               double oldEta = it->eta();
+
+               // Save TH2F instead:
+               if(btrue_random){
+                    h_trueb_random_SmearedPt_Eta->Fill(newPt, newEta, w);
+                    h_trueb_genPt_Eta->Fill(oldPt, oldEta, w);
+               }
+               if(btrue){
+                    nTrueBJets_ ++;
+                    h_trueb_SmearedPt_Eta->Fill(newPt, newEta, w);
+                    if(btagged){
+                        h_trueb_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
+                        h_trueb_btag_genPt_Eta->Fill(oldPt, oldEta, w);
+                    }
+               } else {
+                    h_no_trueb_SmearedPt_Eta->Fill(newPt, newEta, w);
+                    h_no_trueb_genPt_Eta->Fill(oldPt, oldEta, w);
+                    if(btagged){
+                        h_no_trueb_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
+                        h_no_trueb_btag_genPt_Eta->Fill(oldPt, oldEta, w);
+                    }
+               }
+               if(btagged){
+                    nBJets_ ++;
+                    h_btag_SmearedPt_Eta->Fill(newPt, newEta, w);
+               }
+               if(btag){
+                    h_btag_old_SmearedPt_Eta->Fill(newPt, newEta, w);
+               }
+
+
                ++i_jet;
             } else {
                pat::Jet smearedJet(*it);
                Jets_smeared.push_back(smearedJet);
             }
          }
+
          h_BTagCorrectionFactor_smear->Fill(btag_correction);
          GreaterByPt<reco::Candidate> ptComparator_;
          std::sort(Jets_smeared.begin(), Jets_smeared.end(), ptComparator_);
@@ -772,6 +815,12 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
             //FillPredictions(Jets_smeared, i, w, dynamic_jet_btag_map);
             FillPredictions(Jets_smeared, i, w, dynamic_jet_btag_map);
 
+            int NB_Old = calcNBJets(Jets_smeared, dynamic_jet_btag_map);
+            h_NB_Old->Fill(NB_Old, w);
+            //cout << "Number of old btagged jets: " << NB_Old << endl;
+            int NB_New = calcNBJets(Jets_smeared, newdynamic_jet_btag_map);
+            h_NB_New->Fill(NB_New, w);
+            //cout << "Number of new btagged jets: " << NB_New << endl;
             if( HT_pred > HTSave_ && MHT_pred > MHTSave_){
                PredictionTree->Fill();
             }

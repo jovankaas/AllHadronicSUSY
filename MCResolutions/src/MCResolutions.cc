@@ -217,11 +217,28 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
          double res = matchedJet->pt() / (it->p4()+neutrinos).pt();
          double resPhi = matchedJet->phi() - it->phi();
          double resEta = matchedJet->eta() - it->eta();
-         //double res = allJetsInCone.pt() / it->pt();
-         h_tot_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
-         h_tot_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
-         h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
-      
+         //double res = allJetsInCone.pt() / it->pt 
+
+
+// ==============================================================================================================
+    // Note: Currently, templates are used for b-jets and non-b-jets, respectively;
+    // these all-inclusive templates are NOT used!
+
+    // For GenSmearing:
+    // Store resolution binned in genparticle pt and eta, including neutrinopt:
+         // h_tot_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
+         // h_tot_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
+         // h_tot_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
+
+
+    // For R+S:
+    // Store resolution binned in recoparticle pt and eta:
+         h_tot_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
+         h_tot_JetAll_JetResPhi_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(resPhi, weight);
+         h_tot_JetAll_JetResEta_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(resEta, weight);
+// ==============================================================================================================
+
+
          // "Determine btag/btrue information"
          
          //// Use algorithmic matching for heavy flavour ID
@@ -265,20 +282,32 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
              }
          }
 
+    // For GenSmearing:
+    // Store resolution binned in recoparticle pt and eta:
+         // Use templates based on whether it is a true b or not (not based on btags):
+         //if (bTrue) {
+         //   h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
+         //   h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
+         //   h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
+         //} else {
+         //   h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
+         //   h_nob_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
+         //   h_nob_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
+         //}
+    // For R+S:
+    // Store resolution binned in recoparticle pt and eta:
          // Use templates based on whether it is a true b or not (not based on btags):
          if (bTrue) {
-            h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
+            h_b_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
             h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
             h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          } else {
-            h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
+            h_nob_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
             h_nob_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
             h_nob_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          }
-         
       }
    }
-   
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -349,7 +378,6 @@ void MCResolutions::beginJob() {
          h_nob_JetAll_JetResEta_Pt.at(i_eta).at(i_pt)->Sumw2();
       }
    }
-   
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
