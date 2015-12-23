@@ -250,7 +250,7 @@ int main()
    else LumiTitle = "CMS Simulation, L = 10 fb^{  -1}, #sqrt{s} = 13 TeV";
    //else LumiTitle = "CMS work in progress, #sqrt{s} = 13 TeV";
    
-   TString postfix = "_MGMLM_RandS_bestMatching_angResNew_withNeutrinos_Everywhere_MHTall";
+   TString postfix = "_MGMLM_RandS_bestMatching_angResNew_withNeutrinos_Everywhere_RecoPTBins_DeadECALTP";
    //TString postfix = "_MGMLM_GenSmear_bestMatching_angResNew_withNeutrinos_Christian_noBTagCorrections";
    //TString postfix = "_MGMLM_bestMatching_withoutRBcorr_pt10_angRes";
    //TString postfix = "_MGMLM_GenSmear_fineBins_bestMatching_algo_noSeedCut";
