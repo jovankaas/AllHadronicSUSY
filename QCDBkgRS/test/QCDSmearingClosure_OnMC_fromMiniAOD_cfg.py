@@ -83,6 +83,7 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 print "*** R+S Configuration **************************************************"
 #process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_bestMatching_DeadECALTP.root'
 process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP_recoPTbins.root'
+#process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP_recoPTbins.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
@@ -121,9 +122,9 @@ process.QCDfromSmearing.MHTSave = cms.double(0.)
 #process.QCDfromSmearing.HTSave = cms.double(500.)
 #process.QCDfromSmearing.MHTSave = cms.double(200.)
 process.QCDfromSmearing.cleverPrescaleTreating = False
-process.QCDfromSmearing.useRebalanceCorrectionFactors = True
+process.QCDfromSmearing.useRebalanceCorrectionFactors = False
 process.QCDfromSmearing.useBTagEfficiencyFactors = True
-process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = True
+process.QCDfromSmearing.useCleverRebalanceCorrectionFactors = False
 process.QCDfromSmearing.MHTcut_low = cms.double(200.)
 process.QCDfromSmearing.MHTcut_medium = cms.double(350.)
 process.QCDfromSmearing.MHTcut_high = cms.double(500.)
@@ -132,7 +133,6 @@ process.QCDfromSmearing.HTcut_medium = cms.double(800.)
 process.QCDfromSmearing.HTcut_high = cms.double(1000.)
 process.QCDfromSmearing.HTcut_veryhigh = cms.double(1200.)
 process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
-process.QCDfromSmearing.testMode = False
 ###############################################################################
 
 VarsInt = cms.vstring()

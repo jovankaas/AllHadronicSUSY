@@ -72,7 +72,6 @@ QCDBkgRS::QCDBkgRS(const edm::ParameterSet& iConfig)
    useRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useRebalanceCorrectionFactors");
    useBTagEfficiencyFactors_ = iConfig.getParameter<bool> ("useBTagEfficiencyFactors");
    useCleverRebalanceCorrectionFactors_ = iConfig.getParameter<bool> ("useCleverRebalanceCorrectionFactors");
-   testMode_ = iConfig.getParameter<bool> ("testMode");
    A0RMS_ = iConfig.getParameter<double> ("A0RMS");
    A1RMS_ = iConfig.getParameter<double> ("A1RMS");
    probExtreme_ = iConfig.getParameter<double> ("probExtreme");
@@ -1561,9 +1560,6 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::EventAuxiliary aux = iEvent.eventAuxiliary();
    runNum_       = aux.run();
    evtNum_       = aux.event();
-   if( testMode_ && (evtNum_ % 10 != 0)){
-       return;
-   }
    smearNum_     = 0;
    //LeptonVeto
    edm::Handle<int> NLeptons;
