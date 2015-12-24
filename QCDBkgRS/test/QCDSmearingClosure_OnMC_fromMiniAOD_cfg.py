@@ -132,7 +132,7 @@ process.QCDfromSmearing.HTcut_medium = cms.double(800.)
 process.QCDfromSmearing.HTcut_high = cms.double(1000.)
 process.QCDfromSmearing.HTcut_veryhigh = cms.double(1200.)
 process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
-process.QCDfromSmearing.testMode = True
+process.QCDfromSmearing.testMode = False
 ###############################################################################
 
 VarsInt = cms.vstring()
