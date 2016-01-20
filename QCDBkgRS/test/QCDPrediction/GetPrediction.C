@@ -784,6 +784,11 @@ int main()
    c->Print("output_GetPrediction/QCD_MHT_baseline" + postfix + ".ps");
    c->Print("output_GetPrediction/MHT_baseline" + postfix + ".png");
    
+   Title = ">=4 jets, 0 B-jets, #Delta#phi cut, HT > 500 GeV";
+   c =  DrawComparison( pred_->GetPredictionHisto("MHT_zerob_baseline"), pred_->GetSelectionHisto("MHT_zerob_baseline"), Title, LumiTitle,"#slash{H}_{T} (GeV)", yTitle, isData);
+   c->Print("output_GetPrediction/QCD_MHT_zerob_baseline" + postfix + ".ps");
+   c->Print("output_GetPrediction/MHT_zerob_baseline" + postfix + ".png");
+   
    Title = ">=4 jets, #Delta#phi cut, MHT > 200 GeV";
    c =  DrawComparison( pred_->GetPredictionHisto("HT_baseline"), pred_->GetSelectionHisto("HT_baseline"), Title, LumiTitle,"H_{T} (GeV)", yTitle, isData);
    c->Print("output_GetPrediction/QCD_HT_baseline" + postfix + ".ps");

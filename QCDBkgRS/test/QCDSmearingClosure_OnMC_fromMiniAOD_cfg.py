@@ -138,6 +138,7 @@ process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
 VarsInt = cms.vstring()
 VectorInt = cms.vstring()
 VarsDouble = cms.vstring()
+VarsBool = cms.vstring()
 VectorDouble = cms.vstring()
 RecoCandVector = cms.vstring()
 
@@ -303,6 +304,7 @@ process.GoodJets = GoodJetsProducer.clone(
                                           VetoEta = cms.double(3.0)
                                           )
 process.Baseline += process.GoodJets
+VarsBool.extend(['GoodJets:JetID(JetID)'])
 
 ## --- HT jets producer ------------------------------------------------
 print "*** HT jets producer **************************************************"
@@ -392,6 +394,7 @@ process.RA2TreeMaker = TreeMaker.clone(
                                        TreeName       = cms.string("PreSelection"),
                                        VarsRecoCand   = RecoCandVector,
                                        VarsDouble     = VarsDouble,
+                                       VarsBool     = VarsBool,
                                        VectorDouble   = VectorDouble,
                                        VarsInt        = VarsInt,
                                        VectorInt      = VectorInt,

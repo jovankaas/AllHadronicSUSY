@@ -77,6 +77,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    // baseline
    HT_baseline_pred_raw = new TH2F("HT_baseline_pred", "HT baseline", NbinsHT, HTmin, HTmax, Ntries, 0.5, Ntries + 0.5);
    MHT_baseline_pred_raw = new TH2F("MHT_baseline_pred", "MHT baseline", NbinsMHT, MHTmin, MHTmax, Ntries, 0.5, Ntries + 0.5);
+   MHT_zerob_baseline_pred_raw = new TH2F("MHT_zerob_baseline_pred", "MHT zero b baseline", NbinsMHT, MHTmin, MHTmax, Ntries, 0.5, Ntries + 0.5);
    
    // baseline jet bin 1
    Jet1Pt_JetBin1_baseline_pred_raw = new TH2F("baseline_Jet1_Pt_JetBin1_prediction", "Jet1_Pt", NbinsJetPt, JetPtmin, JetPtmax, Ntries, 0.5, Ntries + 0.5);
@@ -227,6 +228,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    // baseline
    HT_baseline_sel = new TH1F("HT_baseline_sel", "HT baseline", NbinsHT, HTmin, HTmax);
    MHT_baseline_sel = new TH1F("MHT_baseline_sel", "MHT baseline", NbinsMHT, MHTmin, MHTmax);
+   MHT_zerob_baseline_sel = new TH1F("MHT_zerob_baseline_sel", "MHT zero b baseline", NbinsMHT, MHTmin, MHTmax);
    
    // baseline jet bin 1
    Jet1Pt_JetBin1_baseline_sel = new TH1F("baseline_Jet1_Pt_JetBin1_selection", "Jet1_Pt", NbinsJetPt, JetPtmin, JetPtmax);
@@ -549,6 +551,9 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
                   // ------------------------------------------------------------- //
                   if( HT > 500. ) {
                      MHT_baseline_pred_raw->Fill(MHT, NSmear, weight);
+                     if( BTags == 0){
+                        MHT_zerob_baseline_pred_raw->Fill(MHT, NSmear, weight);
+                     }
                      NJets_baseline_withoutMHT_pred_raw->Fill(NJets, NSmear, weight);
                      NBJets_baseline_withoutMHT_pred_raw->Fill(BTags, NSmear, weight);
                      if( MHT > 200. ) {
@@ -857,6 +862,9 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
                   // ------------------------------------------------------------- //
                   if( HT_RA2 > 500. ) {
                      MHT_baseline_sel->Fill(MHT_RA2, weight_RA2);
+                     if( BTags_RA2==0 ){
+                        MHT_zerob_baseline_sel->Fill(MHT_RA2, weight_RA2);
+                     }
                      NJets_baseline_withoutMHT_sel->Fill(NJets_RA2, weight_RA2);
                      NBJets_baseline_withoutMHT_sel->Fill(BTags_RA2, weight_RA2);
                      if( MHT_RA2 > 200. ) {
@@ -981,6 +989,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    
    DoRebinning(HT_baseline_pred_raw, HT_baseline_sel , -1);
    DoRebinning(MHT_baseline_pred_raw, MHT_baseline_sel , -2);
+   DoRebinning(MHT_zerob_baseline_pred_raw, MHT_zerob_baseline_sel , -2);
    
    DoRebinning(Jet1Pt_JetBin1_baseline_pred_raw, Jet1Pt_JetBin1_baseline_sel, 10);
    DoRebinning(Jet2Pt_JetBin1_baseline_pred_raw, Jet2Pt_JetBin1_baseline_sel, 10);
@@ -1108,6 +1117,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    
    HT_baseline_pred = CalcPrediction( HT_baseline_pred_raw);
    MHT_baseline_pred = CalcPrediction( MHT_baseline_pred_raw);
+   MHT_zerob_baseline_pred = CalcPrediction( MHT_zerob_baseline_pred_raw);
    
    Jet1Pt_JetBin1_baseline_pred = CalcPrediction(Jet1Pt_JetBin1_baseline_pred_raw);
    Jet2Pt_JetBin1_baseline_pred = CalcPrediction(Jet2Pt_JetBin1_baseline_pred_raw);
@@ -1380,6 +1390,7 @@ Prediction::Prediction(TChain& QCDPrediction, TChain& RA2PreSelection)
    
    HT_baseline_sel->Write();
    MHT_baseline_sel->Write();
+   MHT_zerob_baseline_sel->Write();
    MHT_JetBin1_HTinclusive_sel->Write();
    MHT_JetBin2_HTinclusive_sel->Write();
    MHT_JetBin3_HTinclusive_sel->Write();
@@ -1682,6 +1693,7 @@ TH1F* Prediction::GetSelectionHisto(TString type) {
    
    if ( type == "HT_baseline") return HT_baseline_sel;
    if ( type == "MHT_baseline") return MHT_baseline_sel;
+   if ( type == "MHT_zerob_baseline") return MHT_zerob_baseline_sel;
    
    if( type == "Jet1Pt_JetBin1_baseline" ) return Jet1Pt_JetBin1_baseline_sel;
    if( type == "Jet2Pt_JetBin1_baseline" ) return Jet2Pt_JetBin1_baseline_sel;
@@ -1824,6 +1836,7 @@ TH1F* Prediction::GetPredictionHisto(TString type) {
    
    if ( type == "HT_baseline") return HT_baseline_pred;
    if ( type == "MHT_baseline") return MHT_baseline_pred;
+   if ( type == "MHT_zerob_baseline") return MHT_baseline_pred;
    
    if( type == "Jet1Pt_JetBin1_baseline" ) return Jet1Pt_JetBin1_baseline_pred;
    if( type == "Jet2Pt_JetBin1_baseline" ) return Jet2Pt_JetBin1_baseline_pred;

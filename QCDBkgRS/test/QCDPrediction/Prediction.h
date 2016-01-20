@@ -125,6 +125,7 @@ private:
    // baseline
    TH2F* HT_baseline_pred_raw;
    TH2F* MHT_baseline_pred_raw;
+   TH2F* MHT_zerob_baseline_pred_raw;
 
    // baseline jet bin 1
    TH2F* Jet1Pt_JetBin1_baseline_pred_raw;
@@ -279,6 +280,7 @@ private:
    // baseline
    TH1F* HT_baseline_pred;
    TH1F* MHT_baseline_pred;
+   TH1F* MHT_zerob_baseline_pred;
 
    // baseline jet bin 1
    TH1F* Jet1Pt_JetBin1_baseline_pred;
@@ -436,6 +438,7 @@ private:
    // baseline
    TH1F* HT_baseline_sel;
    TH1F* MHT_baseline_sel;
+   TH1F* MHT_zerob_baseline_sel;
 
    // baseline jet bin 1
    TH1F* Jet1Pt_JetBin1_baseline_sel;
