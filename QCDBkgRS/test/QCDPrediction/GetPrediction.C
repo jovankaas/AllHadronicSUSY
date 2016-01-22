@@ -42,11 +42,11 @@ TCanvas* DrawComparison(TH1F* prediction, TH1F* selection, TString Title, TStrin
       RatioTitle = "(Pred-Data)/Data";
    }
    else {
-      titlePrediction = "Data-driven Pred. from MC";
-      //titlePrediction = "Smeared Generator Jets";
+      //titlePrediction = "Data-driven Pred. from MC";
+      titlePrediction = "Smeared Generator Jets";
       titleSelection = "MC Expectation";
-      RatioTitle = "(Pred-MC)/MC";
-      //RatioTitle = "(Gen-MC)/MC";
+      //RatioTitle = "(Pred-MC)/MC";
+      RatioTitle = "(Gen-MC)/MC";
    }
    
    static Int_t c_LightBrown   = TColor::GetColor( "#D9D9CC" );

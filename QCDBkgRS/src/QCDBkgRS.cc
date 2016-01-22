@@ -1134,7 +1134,8 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
          //Fill HT and MHT prediction histos for i-th iteration of smearing
          int NJets = calcNJets_gen(GenJets_smeared);
          if (NJets >= NJetsSave_) {
-            FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
+            //FillPredictions_gen(GenJets_smeared, i, w*btag_correction, genJet2_btag);
+            FillPredictions_gen(GenJets_smeared, i, w, genJet2_btag);
             // for each iteration, use a newly computed map genjet <-> btag.
             //FillPredictions_gen(GenJets_smeared, i, w, dynamic_genjet_btag_map);
             int NB_Old = calcNBJets_gen(GenJets_smeared, genJet2_btag);
