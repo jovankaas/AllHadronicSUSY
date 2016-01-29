@@ -82,9 +82,9 @@ process.load("AllHadronicSUSY.QCDBkgRS.qcdbkgrs_cfi")
 ###############################################################################
 print "*** R+S Configuration **************************************************"
 #process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_MGMLM_Spring15_fineBins_bestMatching_DeadECALTP.root'
-process.QCDfromSmearing.SmearingFile = 'QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP.root'
+#process.QCDfromSmearing.SmearingFile = 'QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP.root'
 #process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP_recoPTbins.root'
-#process.QCDfromSmearing.SmearingFile = '/afs/desy.de/user/s/sonnevej/xxl/CMSSW_7_4_6_patch6/src/AllHadronicSUSY/MCResolutions/data/QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP_recoPTbins.root'
+process.QCDfromSmearing.SmearingFile = '../../MCResolutions/data/QCD_13TeV_madgraph-MLM_finebins_bestMatching_angles_NeutrinosEverywhere_NeutrinosInBins_DeadECALTP.root'
 process.QCDfromSmearing.jetCollection = InputJetTag
 process.QCDfromSmearing.leptonTag = InputLeptonTag
 process.QCDfromSmearing.uncertaintyName = ''
@@ -94,11 +94,11 @@ process.QCDfromSmearing.InputHistoPhi_HF = 'h_b_JetAll_ResponsePhi'
 process.QCDfromSmearing.InputHistoPt_NoHF = 'h_nob_JetAll_ResponsePt'
 process.QCDfromSmearing.InputHistoEta_NoHF = 'h_nob_JetAll_ResponseEta'
 process.QCDfromSmearing.InputHistoPhi_NoHF = 'h_nob_JetAll_ResponsePhi'
-#process.QCDfromSmearing.RebalanceCorrectionFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withNeutrinosEverywhere_DeadECALTP_recoPTbinspt10.root'
-process.QCDfromSmearing.RebalanceCorrectionFile = 'RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withNeutrinosEverywhere.root'
+process.QCDfromSmearing.RebalanceCorrectionFile = 'QCDPrediction/RebalanceCorrectionFactor/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withNeutrinosEverywhere_DeadECALTPpt10.root'
+#process.QCDfromSmearing.RebalanceCorrectionFile = 'RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_withNeutrinosEverywhere.root'
 #'/nfs/dust/cms/user/csander/RA2/AdditionalInputFiles_13TeV/RebalanceCorrectionFactors_madgraph_spring15_withoutPUReweighting_pt10.root'
-#process.QCDfromSmearing.BTagEfficiencyFile = '/afs/desy.de/user/s/sonnevej/dust/RA2b_input/B_Mis_TagEfficiencies_Spring15MadGraph_DeadECALTP_recoPTbins.root'
-process.QCDfromSmearing.BTagEfficiencyFile = 'B_Mis_TagEfficiencies_Neutrinos_everywhere_Spring15MadGraph.root'
+process.QCDfromSmearing.BTagEfficiencyFile = 'QCDPrediction/BTagEfficiency/B_Mis_TagEfficiencies_Spring15MadGraph_DeadECALTP.root'
+#process.QCDfromSmearing.BTagEfficiencyFile = 'B_Mis_TagEfficiencies_Neutrinos_everywhere_Spring15MadGraph.root'
 process.QCDfromSmearing.NRebin = 1
 #process.QCDfromSmearing.SmearCollection = 'Reco'
 process.QCDfromSmearing.SmearCollection = 'Gen'
@@ -141,9 +141,9 @@ process.QCDfromSmearing.HTcut_extremehigh = cms.double(1400.)
 VarsInt = cms.vstring()
 VectorInt = cms.vstring()
 VarsDouble = cms.vstring()
-VarsBool = cms.vstring()
 VectorDouble = cms.vstring()
 RecoCandVector = cms.vstring()
+VarsBool = cms.vstring()
 
 # baseline producers
 process.Baseline = cms.Sequence(
@@ -304,8 +304,8 @@ process.GoodJets = GoodJetsProducer.clone(
                                           IsoPionTrackTag = cms.InputTag('IsolatedPionTracksVeto'),
                                           PhotonTag = cms.InputTag('GoodPhotons','bestPhoton'),
                                           ### TEMPORARY ###
-                                          VetoHF = cms.bool(False),
-                                          VetoEta = cms.double(3.0)
+                                          #VetoHF = cms.bool(False),
+                                          #VetoEta = cms.double(3.0)
                                           )
 process.Baseline += process.GoodJets
 VarsBool.extend(['GoodJets:JetID(JetID)'])
@@ -398,10 +398,10 @@ process.RA2TreeMaker = TreeMaker.clone(
                                        TreeName       = cms.string("PreSelection"),
                                        VarsRecoCand   = RecoCandVector,
                                        VarsDouble     = VarsDouble,
-                                       VarsBool     = VarsBool,
                                        VectorDouble   = VectorDouble,
                                        VarsInt        = VarsInt,
                                        VectorInt      = VectorInt,
+                                       VarsBool     = VarsBool,
 )
 ###############################################################################
 
@@ -426,10 +426,11 @@ process.dump   = cms.EDAnalyzer("EventContentAnalyzer")
 ###############################################################################
 
 ## --- MET Filters -----------------------------------------------
-from RecoMET.METFilters.metFilters_cff import EcalDeadCellTriggerPrimitiveFilter
-process.ECALDeadCellFilter = EcalDeadCellTriggerPrimitiveFilter.clone()
+print "*** MET Filters **************************************************"
+#from RecoMET.METFilters.metFilters_cff import EcalDeadCellTriggerPrimitiveFilter
+#process.ECALDeadCellFilter = EcalDeadCellTriggerPrimitiveFilter.clone()
 process.prediction = cms.Path(
-                              process.ECALDeadCellFilter *
+                              #process.ECALDeadCellFilter *
                               process.patJetCorrFactorsReapplyJEC *
                               process.patJetsReapplyJEC *
                               process.Baseline *

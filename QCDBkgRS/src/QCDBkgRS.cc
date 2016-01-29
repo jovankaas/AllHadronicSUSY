@@ -2313,6 +2313,7 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void QCDBkgRS::beginJob()
 {
 
+   cout << "Starting job" << endl;
    debug = 0;
 
    edm::Service<TFileService> fs;

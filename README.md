@@ -8,7 +8,7 @@ cd CMSSW_7_4_15/src/
 cmsenv
 
 
-git cms-merge-topic -u cms-met:METCorUnc74X
+git cms-merge-topic -u kpedro88:METfix7415
 
 git clone https://github.com/TreeMaker/TreeMaker.git -b Run2
 

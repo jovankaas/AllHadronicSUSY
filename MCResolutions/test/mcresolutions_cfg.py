@@ -56,7 +56,7 @@ process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 ## --- Setup WeightProducer --------------------------------------------
 from TreeMaker.WeightProducer.getWeightProducer_cff import getWeightProducer
 process.WeightProducer = getWeightProducer(dataSetName)
-process.WeightProducer.Lumi = cms.double(lumi)
+process.WeightProducer.LumiScale = cms.double(lumi)
 process.WeightProducer.PU = cms.int32(0) # PU: 3 for S10, 2 for S7
 process.WeightProducer.FileNamePUDataDistribution = cms.string("NONE")
 
@@ -125,6 +125,7 @@ process.GoodPhotons = cms.EDProducer("PhotonIDisoProducer",
                                      ecalRecHitsInputTag_EE = cms.InputTag("reducedEgamma","reducedEERecHits"),
                                      ecalRecHitsInputTag_EB = cms.InputTag("reducedEgamma","reducedEBRecHits"),
                                      rhoCollection = cms.untracked.InputTag("fixedGridRhoFastjetAll"),
+                                     genParCollection = cms.untracked.InputTag("genParCollection"),
                                      debug = cms.untracked.bool(False)
                                      )
 
@@ -199,8 +200,8 @@ process.GoodJets = GoodJetsProducer.clone(
                                           IsoPionTrackTag = cms.InputTag('IsolatedPionTracksVeto'),
                                           PhotonTag = cms.InputTag('GoodPhotons','bestPhoton'),
                                           ### TEMPORARY ###
-                                          VetoHF = cms.bool(False),
-                                          VetoEta = cms.double(3.0)
+                                          #VetoHF = cms.bool(False),
+                                          #VetoEta = cms.double(3.0)
                                           )
 
 

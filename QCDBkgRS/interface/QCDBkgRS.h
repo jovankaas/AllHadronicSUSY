@@ -75,6 +75,7 @@ private:
 
    // For tree of kinematic observables
    UInt_t evtNum_;
+   //ULong64_t evtNum_;
    UInt_t runNum_;
    UInt_t smearNum_;
    UInt_t nBJets_;
