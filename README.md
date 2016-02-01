@@ -3,6 +3,8 @@
 ## Instructions
 
 ```
+Works on: cmssw/slc6_amd64_gcc491
+
 cmsrel CMSSW_7_4_15
 cd CMSSW_7_4_15/src/
 cmsenv

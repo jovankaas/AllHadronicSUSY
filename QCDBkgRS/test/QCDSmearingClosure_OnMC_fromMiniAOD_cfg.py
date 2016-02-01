@@ -427,10 +427,36 @@ process.dump   = cms.EDAnalyzer("EventContentAnalyzer")
 
 ## --- MET Filters -----------------------------------------------
 print "*** MET Filters **************************************************"
-#from RecoMET.METFilters.metFilters_cff import EcalDeadCellTriggerPrimitiveFilter
-#process.ECALDeadCellFilter = EcalDeadCellTriggerPrimitiveFilter.clone()
+
+# Dead ECAL cell primitive filter
+from RecoMET.METFilters.metFilters_cff import EcalDeadCellTriggerPrimitiveFilter
+process.EcalDeadCellTriggerPrimitiveFilter = EcalDeadCellTriggerPrimitiveFilter.clone()
+# HBHE noise filter
+#from CommonTools.RecoAlgos import HBHENoiseFilterResultProducer
+#from CommonTools.RecoAlgos import HBHENoiseFilter
+#process.HBHENoiseFilter = HBHENoiseFilter.clone()
+#process.HBHENoiseFilterResultProducer = HBHENoiseFilterResultProducer.clone()
+from CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi import *
+process.HBHENoiseFilterResultProducer = HBHENoiseFilterResultProducer.clone()
+from CommonTools.RecoAlgos.HBHENoiseFilter_cfi import *
+process.HBHENoiseFilter = HBHENoiseFilter.clone()
+
+process.metFilters = cms.Sequence(
+   process.HBHENoiseFilterResultProducer *
+   process.HBHENoiseFilter *
+   #primaryVertexFilter*
+   #HBHENoiseIsoFilter*
+   #CSCTightHaloFilter *
+   #hcalLaserEventFilter *
+   process.EcalDeadCellTriggerPrimitiveFilter
+   #*goodVertices * trackingFailureFilter *
+   #eeBadScFilter
+   #ecalLaserCorrFilter *
+   #trkPOGFilters
+)
+
 process.prediction = cms.Path(
-                              #process.ECALDeadCellFilter *
+                              process.metFilters *
                               process.patJetCorrFactorsReapplyJEC *
                               process.patJetsReapplyJEC *
                               process.Baseline *
@@ -473,6 +499,7 @@ process.prediction = cms.Path(
 #                                    )
 
 process.mc = cms.Path(
+                      process.metFilters *
                       process.patJetCorrFactorsReapplyJEC *
                       process.patJetsReapplyJEC *
                       process.Baseline *
