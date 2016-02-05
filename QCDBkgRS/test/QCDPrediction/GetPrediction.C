@@ -42,11 +42,11 @@ TCanvas* DrawComparison(TH1F* prediction, TH1F* selection, TString Title, TStrin
       RatioTitle = "(Pred-Data)/Data";
    }
    else {
-      //titlePrediction = "Data-driven Pred. from MC";
-      titlePrediction = "Smeared Generator Jets";
+      titlePrediction = "Data-driven Pred. from MC";
+      //titlePrediction = "Smeared Generator Jets";
       titleSelection = "MC Expectation";
-      //RatioTitle = "(Pred-MC)/MC";
-      RatioTitle = "(Gen-MC)/MC";
+      RatioTitle = "(Pred-MC)/MC";
+      //RatioTitle = "(Gen-MC)/MC";
    }
    
    static Int_t c_LightBrown   = TColor::GetColor( "#D9D9CC" );
@@ -76,7 +76,7 @@ TCanvas* DrawComparison(TH1F* prediction, TH1F* selection, TString Title, TStrin
    pad1->cd();
    
    prediction->DrawCopy("hist");
-   selection->Draw("same");
+   selection->Draw("esame");
    prediction->SetFillColor(kAzure-3);
    prediction->SetFillStyle(3354);
    prediction->DrawCopy("e2same");
@@ -250,11 +250,11 @@ int main()
    else LumiTitle = "CMS Simulation, L = 10 fb^{  -1}, #sqrt{s} = 13 TeV";
    //else LumiTitle = "CMS work in progress, #sqrt{s} = 13 TeV";
    
-   TString postfix = "_MGMLM_RandS_bestMatching_angResNew_DeadECALTP";
+   //TString postfix = "_MGMLM_RandS_bestMatching_angles_withNeutrinos_everywhere_DeadECALTP_HBHEnoise_recoPTbins_newTreeMaker";
    //TString postfix = "_MGMLM_GenSmear_bestMatching_angResNew_withNeutrinos_Christian_noBTagCorrections";
    //TString postfix = "_MGMLM_bestMatching_withoutRBcorr_pt10_angRes";
    //TString postfix = "_MGMLM_GenSmear_fineBins_bestMatching_algo_noSeedCut";
-   //TString postfix = "_test";
+   TString postfix = "_test";
    
    vector<TString> xTitle_presel;
    xTitle_presel.push_back("H_{T} (GeV)");
