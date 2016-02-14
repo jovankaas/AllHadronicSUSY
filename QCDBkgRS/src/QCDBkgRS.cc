@@ -2484,13 +2484,13 @@ void QCDBkgRS::beginJob()
       h_btag_old_SmearedPt_Eta->Sumw2();
 
       h_JetPt_gen = fs->make<TH1F> ("JetPt_gen", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_gen->Sumw2();
+      h_JetPt_gen->Sumw2(); // Works
       h_JetPt_reco = fs->make<TH1F> ("JetPt_reco", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_reco->Sumw2();
+      h_JetPt_reco->Sumw2(); // Works
       h_JetPt_reb = fs->make<TH1F> ("JetPt_reb", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_reb->Sumw2();
+      h_JetPt_reb->Sumw2(); // Does not work
       h_JetPt_smear = fs->make<TH1F> ("JetPt_smear", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_smear->Sumw2();
+      h_JetPt_smear->Sumw2(); // Does not work
 
       h_deltaR_rebCorr = fs->make<TH1F> ("deltaR_rebCorr", "deltaR", 400, 0., 2.);
       h_deltaR_rebCorr->Sumw2();
