@@ -285,27 +285,27 @@ void MCResolutions::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     // For GenSmearing:
     // Store resolution binned in genparticle pt and eta:
          // Use templates based on whether it is a true b or not (not based on btags):
-         if (bTrue) {
-            h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
-            h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
-            h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
-         } else {
-            h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
-            h_nob_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
-            h_nob_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
-         }
-    // For R+S:
-    // Store resolution binned in recoparticle pt and eta:
-         // Use templates based on whether it is a true b or not (not based on btags):
          //if (bTrue) {
-         //   h_b_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
+         //   h_b_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
          //   h_b_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
          //   h_b_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          //} else {
-         //   h_nob_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
+         //   h_nob_JetAll_JetResPt_Pt.at(EtaBin(it->eta())).at(PtBin((it->p4()+neutrinos).pt()))->Fill(res, weight);
          //   h_nob_JetAll_JetResPhi_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resPhi, weight);
          //   h_nob_JetAll_JetResEta_Pt.at(EtaBin(it->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
          //}
+    // For R+S:
+    // Store resolution binned in recoparticle pt and eta:
+         // Use templates based on whether it is a true b or not (not based on btags):
+         if (bTrue) {
+            h_b_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
+            h_b_JetAll_JetResPhi_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(resPhi, weight);
+            h_b_JetAll_JetResEta_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(it->pt()))->Fill(resEta, weight);
+         } else {
+            h_nob_JetAll_JetResPt_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(res, weight);
+            h_nob_JetAll_JetResPhi_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(resPhi, weight);
+            h_nob_JetAll_JetResEta_Pt.at(EtaBin(matchedJet->eta())).at(PtBin(matchedJet->pt()))->Fill(resEta, weight);
+         }
       }
    }
 }
