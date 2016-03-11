@@ -261,6 +261,7 @@ double QCDBkgRS::GetRebalanceCorrection(double jet_pt, bool btag)
          double result = 0;
          if (btag) {
             result = h_2DRebCorrectionFactor_b_py.at(i_bin-1)->GetRandom();;
+            cout << "result reb bjet: " << result << endl;
          } else {
             result = h_2DRebCorrectionFactor_py.at(i_bin-1)->GetRandom();;
          }
@@ -609,6 +610,15 @@ void QCDBkgRS::SmearingJets(const std::vector<pat::Jet> &Jets_reb, std::vector<p
    // to count the number of b-jets in an event:
    std::map <const reco::Jet*, bool> dynamic_jet_btag_map;
    std::map <const reco::Jet*, bool> newdynamic_jet_btag_map;
+
+
+   // Before smearing, save all variables to a rebalanced tree.
+   // This should give you something that you could analyze quickly.
+   // Needed: for each jet, pt, eta, btag.
+   // Needed from histograms: the pt, eta and phi smearing scales 
+   // (based on the jet pt).
+   // Furthermore, for btrue, you need: btageff, nbtrue, nbtag, nnobtag
+   //
    for (int i = 1; i <= Ntries_; ++i) {
       int Ntries2 = 1;
       double w = weight_;
@@ -1170,9 +1180,9 @@ void QCDBkgRS::SmearingGenJets(edm::View<reco::GenJet>* Jets_gen, edm::View<pat:
             DeltaPhiMinN_pred = 0.;
          }
       }
-      if(mht_ > 0){
-          tree_->Fill();
-      }
+      //if(mht_ > 0){
+          //tree_->Fill();
+      //}
    }
 
    return;
@@ -1648,7 +1658,11 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       if (it->bDiscriminator(btagTag_) > btagCut_){
           nBJets_after_reb_++;
+          h_bJetPt_reco->Fill(it->pt(), weight_);
+      } else {
+          h_nonbJetPt_reco->Fill(it->pt(), weight_);
       }
+
       if( JetCounter == 1 ) {
          Jet1_rec = &(*it);
       }
@@ -1880,7 +1894,8 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       int NNN = 0;
       for (edm::View<reco::GenJet>::const_iterator it = Jets_gen.begin(); it != Jets_gen.end(); ++it) {
          double dRmin = 100;
-         const reco::Jet* matchedJet = 0;
+         //const reco::Jet* matchedJet = 0;
+         const pat::Jet* matchedJet = 0;
          double addActivity = 0;
 
       ptbefore_reb_.push_back(it->pt());
@@ -1953,6 +1968,7 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                // pt spectrum of not-matched reco jets
                h_RecJetNotMatched_Pt->Fill(matchedJet->pt(), weight_);
 
+
                // pt spectrum of not-matched reco jets in NJet bins
                if( NJets_gen == 2 ) {
                   h_RecJetNotMatched_JetBin1_Pt->Fill(matchedJet->pt(), weight_);
@@ -2009,9 +2025,6 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       JetCounter = 0;
       for (vector<pat::Jet>::const_iterator it = Jets_reb-> begin(); it != Jets_reb->end(); ++it) {
          ptafter_reb_.push_back(it->pt());
-         if (it->bDiscriminator(btagTag_) > btagCut_){
-             nBJets_after_reb_++;
-         }
          JetCounter++;
          h_JetPt_reb->Fill(it->pt(), weight_);
 
@@ -2107,13 +2120,25 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                }
                // match reco jets to gen jets
                double dRmin_reco = 100;
-               const reco::Jet* matchedJet_reco = 0;
+               const pat::Jet* matchedJet_reco = 0;
                for (edm::View<pat::Jet>::const_iterator jt = Jets_rec.begin(); jt != Jets_rec.end(); ++jt) {
                   double dR_reco = deltaR(*jt, *it);
                   if (dR_reco < dRmin_reco) {
                      dRmin_reco = dR_reco;
                      matchedJet_reco = &(*jt);
                   }
+               }
+
+               if(isRebalanced && matchedJet->bDiscriminator(btagTag_) != matchedJet_reco->bDiscriminator(btagTag_)){
+                   //cout << matchedJet->bDiscriminator(btagTag_) << " reb -- " << matchedJet_reco->bDiscriminator(btagTag_) << " reco " << endl;
+               }
+               if (isRebalanced && matchedJet_reco->bDiscriminator(btagTag_) > btagCut_){
+                   nBJets_after_reb_++;
+                   h_bJetPt_reb->Fill(matchedJet->pt(), weight_);
+                   h_bJetPt_gen->Fill(it->pt(), weight_);
+               } else if(isRebalanced) {
+                   h_nonbJetPt_reb->Fill(matchedJet->pt(), weight_);
+                   h_nonbJetPt_gen->Fill(it->pt(), weight_);
                }
 
                if (controlPlots_ && weight_ < 30000) {
@@ -2198,6 +2223,11 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       for (vector<pat::Jet>::const_iterator it = Jets_smeared-> begin(); it != Jets_smeared->end(); ++it) {
          JetCounter++;
          h_JetPt_smear->Fill(it->pt(), weight_);
+         if(it->bDiscriminator(btagTag_) > btagCut_){
+            h_bJetPt_smear->Fill(it->pt(), weight_);
+         } else {
+            h_nonbJetPt_smear->Fill(it->pt(), weight_);
+         }
 
          if( JetCounter == 1 ) {
             Jet1_smear = &(*it);
@@ -2219,6 +2249,14 @@ void QCDBkgRS::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       for (vector<reco::GenJet>::const_iterator it = GenJets_smeared-> begin(); it != GenJets_smeared->end(); ++it) {
          vMHThigh_smeared -= it->p4();
          HThigh_smeared += it->pt();
+         h_JetPt_smear->Fill(it->pt(), weight_);
+         // Broken: how to access b/nonb info?
+         //if (fabs(it->partonFlavour()) == 5) {
+         //if(it->bDiscriminator(btagTag_) > btagCut_){
+         //   h_bJetPt_smear->Fill(it->pt(), weight_);
+         //} else {
+         //   h_nonbJetPt_smear->Fill(it->pt(), weight_);
+         //}
       }
    }
 
@@ -2431,24 +2469,24 @@ void QCDBkgRS::beginJob()
       int etamax = EtaBinEdges_.back();
       int etamin = EtaBinEdges_.front();
 
-      tree_ = fs->make<TTree>("kinematics", "kinematics");  
-      tree_->SetAutoSave(10000000000);
-      tree_->SetAutoFlush(1000000);
-      tree_->Branch("RunNum",&runNum_,"RunNum/i");
-      tree_->Branch("EvtNum",&evtNum_,"EvtNum/i");
-      tree_->Branch("SmearNum",&smearNum_,"SmearNum/i");
-      tree_->Branch("ht",&ht_,"ht/F");
-      tree_->Branch("NBJets",&nBJets_,"NBJets/i");
-      tree_->Branch("NBJets_before_reb",&nBJets_before_reb_,"NBJets_before_reb/i");
-      tree_->Branch("NBJets_after_reb",&nBJets_after_reb_,"NBJets_after_reb/i");
-      tree_->Branch("NTrueBJets",&nTrueBJets_,"NTrueBJets/i");
-      tree_->Branch("mht",&mht_,"mht/F");
-      tree_->Branch("btageff", "std::vector<Float_t>", &(btageff_), 32000, 0);
-      tree_->Branch("bmistageff", "std::vector<Float_t>", &(bmistageff_), 32000, 0);
-      tree_->Branch("ptold", "std::vector<Float_t>", &(ptold_), 32000, 0);
-      tree_->Branch("ptnew", "std::vector<Float_t>", &(ptnew_), 32000, 0);
-      tree_->Branch("ptbefore_reb", "std::vector<Float_t>", &(ptbefore_reb_), 32000, 0);
-      tree_->Branch("ptafter_reb", "std::vector<Float_t>", &(ptafter_reb_), 32000, 0);
+      //tree_ = fs->make<TTree>("kinematics", "kinematics");  
+      //tree_->SetAutoSave(10000000000);
+      //tree_->SetAutoFlush(1000000);
+      //tree_->Branch("RunNum",&runNum_,"RunNum/i");
+      //tree_->Branch("EvtNum",&evtNum_,"EvtNum/i");
+      //tree_->Branch("SmearNum",&smearNum_,"SmearNum/i");
+      //tree_->Branch("ht",&ht_,"ht/F");
+      //tree_->Branch("NBJets",&nBJets_,"NBJets/i");
+      //tree_->Branch("NBJets_before_reb",&nBJets_before_reb_,"NBJets_before_reb/i");
+      //tree_->Branch("NBJets_after_reb",&nBJets_after_reb_,"NBJets_after_reb/i");
+      //tree_->Branch("NTrueBJets",&nTrueBJets_,"NTrueBJets/i");
+      //tree_->Branch("mht",&mht_,"mht/F");
+      //tree_->Branch("btageff", "std::vector<Float_t>", &(btageff_), 32000, 0);
+      //tree_->Branch("bmistageff", "std::vector<Float_t>", &(bmistageff_), 32000, 0);
+      //tree_->Branch("ptold", "std::vector<Float_t>", &(ptold_), 32000, 0);
+      //tree_->Branch("ptnew", "std::vector<Float_t>", &(ptnew_), 32000, 0);
+      //tree_->Branch("ptbefore_reb", "std::vector<Float_t>", &(ptbefore_reb_), 32000, 0);
+      //tree_->Branch("ptafter_reb", "std::vector<Float_t>", &(ptafter_reb_), 32000, 0);
 
 
       cout << "# eta bins: " << etabins << " and etamin: " << etamin << " and etamax: " << etamax << endl;
@@ -2484,13 +2522,29 @@ void QCDBkgRS::beginJob()
       h_btag_old_SmearedPt_Eta->Sumw2();
 
       h_JetPt_gen = fs->make<TH1F> ("JetPt_gen", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_gen->Sumw2(); // Works
+      h_JetPt_gen->Sumw2();
       h_JetPt_reco = fs->make<TH1F> ("JetPt_reco", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_reco->Sumw2(); // Works
+      h_JetPt_reco->Sumw2();
       h_JetPt_reb = fs->make<TH1F> ("JetPt_reb", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_reb->Sumw2(); // Does not work
+      h_JetPt_reb->Sumw2();
       h_JetPt_smear = fs->make<TH1F> ("JetPt_smear", "Jet pt", 1000, 0., 1000.);
-      h_JetPt_smear->Sumw2(); // Does not work
+      h_JetPt_smear->Sumw2();
+      h_bJetPt_gen = fs->make<TH1F> ("bJetPt_gen", "BJet pt", 1000, 0., 1000.);
+      h_bJetPt_gen->Sumw2();
+      h_bJetPt_reco = fs->make<TH1F> ("bJetPt_reco", "BJet pt", 1000, 0., 1000.);
+      h_bJetPt_reco->Sumw2();
+      h_bJetPt_reb = fs->make<TH1F> ("bJetPt_reb", "BJet pt", 1000, 0., 1000.);
+      h_bJetPt_reb->Sumw2();
+      h_bJetPt_smear = fs->make<TH1F> ("bJetPt_smear", "BJet pt", 1000, 0., 1000.);
+      h_bJetPt_smear->Sumw2();
+      h_nonbJetPt_gen = fs->make<TH1F> ("nonbJetPt_gen", "nonBJet pt", 1000, 0., 1000.);
+      h_nonbJetPt_gen->Sumw2();
+      h_nonbJetPt_reco = fs->make<TH1F> ("nonbJetPt_reco", "nonBJet pt", 1000, 0., 1000.);
+      h_nonbJetPt_reco->Sumw2();
+      h_nonbJetPt_reb = fs->make<TH1F> ("nonbJetPt_reb", "nonBJet pt", 1000, 0., 1000.);
+      h_nonbJetPt_reb->Sumw2();
+      h_nonbJetPt_smear = fs->make<TH1F> ("nonbJetPt_smear", "nonBJet pt", 1000, 0., 1000.);
+      h_nonbJetPt_smear->Sumw2();
 
       h_deltaR_rebCorr = fs->make<TH1F> ("deltaR_rebCorr", "deltaR", 400, 0., 2.);
       h_deltaR_rebCorr->Sumw2();

@@ -1,0 +1,31 @@
+/*
+
+
+Instructions:
+ * first time use: make sure that you linked the ~/.proof folder to a directory in sonas (or some large storage) sinze the temp files might be very large!
+See also  https://twiki.cern.ch/twiki/bin/viewauth/CMS/HamburgWikiComputingNAFPOD for more information
+ * log in to naf
+If necessary:
+ * load module use -a /afs/desy.de/group/cms/modulefiles/
+ * export SCRAM_ARCH=slc6_amd64_gcc491
+
+load modules:
+ * module load root
+ * module load pod
+When this fails, you may have problems with a ROOT version. Log out and log in again, reload these modules
+
+start the POD server: 
+ * pod-server start
+ * pod-submit -n 80 -r ge
+
+wait, check how many servers are running with:
+ * pod-info -n
+
+when enough have started change to cmsenv root (needed for the proof to function with this trees)
+ * cmsenv (in environment)
+run root:
+ * root -l MakePrediction.C
+ * root -l MakeExpectation.C
+Now you look at the output files:
+ * root -l Expectation.root Prediction.root Compare.root
+*/

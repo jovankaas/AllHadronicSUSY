@@ -74,8 +74,8 @@ private:
    virtual void endJob();
 
    // For tree of kinematic observables
-   UInt_t evtNum_;
-   //ULong64_t evtNum_;
+   //UInt_t evtNum_;
+   ULong64_t evtNum_;
    UInt_t runNum_;
    UInt_t smearNum_;
    UInt_t nBJets_;
@@ -316,6 +316,16 @@ private:
    TH1F* h_JetPt_reco;
    TH1F* h_JetPt_reb;
    TH1F* h_JetPt_smear;
+   TH1F* h_bJetPt_gen;
+   TH1F* h_bJetPt_reco;
+   TH1F* h_bJetPt_reb;
+   TH1F* h_bJetPt_smear;
+   TH1F* h_nonbJetPt_gen;
+   TH1F* h_nonbJetPt_reco;
+   TH1F* h_nonbJetPt_reb;
+   TH1F* h_nonbJetPt_smear;
+   
+   
    
    TH1F *h_HT_gen, *h_HT_rec, *h_HT_smeared, *h_HT_reb;
    TH1F *h_deltaPhiJet1Jet2_gen, *h_deltaPhiJet1Jet2_rec, *h_deltaPhiJet1Jet2_smeared, *h_deltaPhiJet1Jet2_reb;
