@@ -1,0 +1,164 @@
+########################################
+######     Rebalance & Smear     #######
+########################################
+# How to execute Rebalance and Smear code.
+# This uses the package grid-control which is below
+# assumed to be installed in ~/path-to/grid-control
+# To install:
+svn co https://ekptrac.physik.uni-karlsruhe.de/svn/grid-control/tags/stable/grid-control
+# For more information see:
+# https://ekptrac.physik.uni-karlsruhe.de/trac/grid-control/wiki
+# Note also this list of error codes:
+# https://ekptrac.physik.uni-karlsruhe.de/trac/grid-control/wiki/ErrorCodes
+
+#################################################
+######  First create response templates.   ######
+#################################################
+# Note that the templates are different for
+# b and non-b particles
+# They are saved in eta and pt bins, check that you choose
+# correctly whether to save in gen-pt or reco-pt bins
+# in AllHadronicSUSY/MCResolutions/src/MCResolutions.cc
+
+# To test:
+cd AllHadronicSUSY/MCResolutions/test
+cmsRun mcresolutions_cfg.py
+# Make sure that all the directory settings are correct.
+# Initialize job (notice the -i for initialize)
+voms-proxy-init -voms cms:/cms/dcms -valid 72:00
+cd AllHadronicSUSY/grid-control
+/path-to/grid-control/go.py -iGc gc_mcresolutions-MG.conf 
+
+# If needed, or just for checking the status, resume job
+/path-to/grid-control/go.py -Gc gc_mcresolutions-MG.conf 
+
+
+
+# Add all the root files in the dust directory into one:
+hadd /path/to/templates/QCD_HT-madgraph-MLM_my_settings_for_this_MC_Resolutions.root ~/path/to/my_response_template_file.root
+
+# If needed (at the moment this is not used) you can compute b(mis)tag efficiencies and number of true b's and btags:
+cd QCDBkgRS/test/QCDPrediction
+# Run the code within root:
+root -b GetBMistag.C
+# Copy to RA2b input dir if the output looks ok:
+cp BTagEfficiency/B_Mis_TagEfficiencies_Spring15MadGraph.root ~/path/to/my_b_efficiencies.root
+
+
+##################################################
+#########          GenSmearing         ###########
+##################################################
+
+# Smearing of generator jets to test smearing procedure.
+# Set the SmearCollection to Gen, not Reco in the file:
+QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
+# so that you have this line:
+process.QCDfromSmearing.SmearCollection = 'Gen'
+# Also check that useRebalanceCorrections is set to False (but should not make a difference) and set the correct path to the response templates:
+process.QCDfromSmearing.SmearingFile = /path/to/templates
+
+
+# Test Rebalance and Smear code:
+cd AllHadronicSUSY/QCDBkgRS/test
+cmsRun QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
+
+# Make sure that all the directory settings are correct.
+# Initialize job (notice the -i for initialize)
+voms-proxy-init -voms cms:/cms/dcms -valid 72:00
+cd AllHadronicSUSY/grid-control
+/path-to/grid-control/go.py -Gci gc_RSclosure-MG.conf
+
+
+##########################################################
+######  Now prepare R&S for rebalance corrections.  ######
+##########################################################
+# Before running rebalance and smear, rebalance corrections
+# that take into account any differences between gen and 
+# rebalance jet pT need to be computed.
+# For this, Rebalance and Smear needs to be run once.
+# Use SmearCollection Reco, not Gen in the file:
+QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
+# to make sure that you have the line
+process.QCDfromSmearing.SmearCollection = 'Reco'
+# Also check that the rebalance corrections are not used (they will be computed):
+process.QCDfromSmearing.useRebalanceCorrectionFactors = False
+# and set the correct path to the response templates:
+process.QCDfromSmearing.SmearingFile = /path/to/templates
+
+# You can test the Rebalance and Smear code again with:
+cd AllHadronicSUSY/QCDBkgRS/test
+cmsRun QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
+
+# Run R&S:
+# Initialize job (notice the -i for initialize)
+voms-proxy-init -voms cms:/cms/dcms -valid 72:00
+cd AllHadronicSUSY/grid-control
+/path-to/grid-control/go.py -Gci gc_RSclosure-MG.conf
+# Make sure that all the directory settings are correct in this config file.
+
+# Compute rebalance corrections from the resulting files:
+cd AllHadronicSUSY/QCDBkgRS/QCDPrediction
+# Check in the file GetRebalanceCorrectionFactor.C:
+#       * The name of the output file;
+#       * The file list used (typically a list of files in filelists_phys14/filelist.txt).
+# Compute the rebalance correction factors:
+root -b GetRebalanceCorrectionFactor.C
+# Use the output file:
+QCDPrediction/RebalanceCorrectionFactor/RebalanceCorrectionFactors_with_my_settings.root
+# as the input file for Rebalance and Smear.
+
+
+########################################
+#########    Now run R & S   ###########
+########################################
+
+# Now the full rebalance and smear procedure can be performed.
+# Use SmearCollection Reco, not Gen: open the file
+QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
+# to make sure that you have the line
+process.QCDfromSmearing.SmearCollection = 'Reco'
+# Also check that the rebalance corrections are now used:
+process.QCDfromSmearing.useRebalanceCorrectionFactors = True
+# and set the correct path to the response templates:
+process.QCDfromSmearing.SmearingFile = /path/to/templates
+# and set the correct path to the rebalance corrections:
+process.QCDfromSmearing.RebalanceCorrectionFile = /path/to/rebalance_corr
+
+# You may again want to test the Rebalance and Smear code:
+cd AllHadronicSUSY/QCDBkgRS/test
+cmsRun QCDSmearingClosure_OnMC_fromMiniAOD_cfg.py
+
+# Initialize job (notice the -i for initialize)
+voms-proxy-init -voms cms:/cms/dcms -valid 72:00
+cd AllHadronicSUSY/grid-control
+/path-to/grid-control/go.py -Gci gc_RSclosure-MG.conf
+# Make sure that all the directory settings are correct in this config file.
+
+
+########################################
+#########    Make Plots      ###########
+########################################
+
+# Make histograms per bin:
+cd QCDPrediction
+# Compile the code:
+make
+# Make bin by bin plot:
+./GetBinPrediction.x
+# Make all kinds of histograms:
+./GetPrediction.x
+
+# Alternatively, parallellized plotting can be used.
+# See the directory
+AllHadronicSUSY/QCDBkgRS/Plotting
+# This plotting code is not yet fully developed.
+
+
+
+
+
+
+
+
+
+
